@@ -10,7 +10,8 @@ This class models the structure of the ribbon synapse. This class does two thing
 
 1) **Models calcium channels and vesicles**: Randomly distributes channel and vesicle according to some shape (ie: `uniform ring`)
 
-This is important for modeling and visualizing. See below
+This is important for modeling and visualizing. See below.
+
 
 2) **Calculate Rate of Release of Neurotransmitters**: Uses Hill-Langmuir equation based on calcium concentration
 
@@ -62,7 +63,12 @@ https://github.com/evanwporter/cochlea-nerve/blob/3146900feea2064af26d5eec043a1f
 
 But basically he uses both `TransductionRHS_v5` and `NTdynamicsRHS_v5` as the ODEFUNC. This is probably the file to look at.
 
-He also used a custom function odeWrapper, which is just an interface for handling the results
+He also used a custom function odeWrapper, which is just an interface for handling the results.
+
+
+Running example 4 results in the following image:
+
+![image](https://github.com/evanwporter/cochlea-nerve/assets/115374841/68aafaec-05d6-4049-9e08-5bf0bb94e581)
 
 
 
