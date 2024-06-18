@@ -96,9 +96,14 @@ classdef RibbonSynapse_v4
         %     k = boltzmann(C, k_max, H, S);
         % end
         function k = TransmitterRelease(C, k_max, n, KA)
-            %TRANSMITTERRELEASE 
-        
+            % E Notes - 
+            %   k_max: max neurotransmitter release
+            %   C: calcium concentration        
             k = k_max .* Hill_Langmuir_A(C, n, KA);
+            %   scaled between 0 and k_max
+            % k: is a 1 x M vector (where M is number of vesicles)
+            %   Each element representes the number of neurotransmitters released
+            %       per unit of time 
         end
     end
     
