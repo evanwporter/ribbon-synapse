@@ -39,8 +39,8 @@ k1 = RibbonSynapse_v4.TransmitterRelease(C_vesicles, transmitter_release_paramet
 q_old = q;
 
 % Nqk = number released from vesicle (random) <- dq : RoC of release
-% Nwx = number reprocessed <- RoC of repocess
-% NMqt = number created <- RoC of creation
+% Nwx = number reprocessed <- dc RoC of repocess
+% NMqt = number created <- dw RoC of creation
 
 % dc_proton <- RoC of proton concentration
 

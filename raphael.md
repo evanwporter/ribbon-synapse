@@ -22,25 +22,29 @@ TransmitterRelease is called by `NTdynamicsRHS_v5_core.m`.
 
 Calculates neurotransmitter change in states over time (dt).
 
+Returns the following:
+https://github.com/evanwporter/cochlea-nerve/blob/cc5499247e8e09865531b8ef920a54d3ea39d4cc/IHC/NTdynamicsRHS_v5_core.m#L41-L45
+
 
 ## TransductionRHS_v5
 
-\IHC\TransductionRHS_v5.m
-
 https://github.com/evanwporter/cochlea-nerve/blob/19159e7c3610c42b41953590521d990e9c226f77/IHC/TransductionRHS_v5.m#L110-L112
 
-This section determines whether based on membrance potential (Vm) 
-channels are open or closed or blocked.
-Has an element of randomness (monte carlo)
+First part of TransductionRHS determines whether based on membrance potential (`Vm`) channels are open or closed or blocked. It has an element of randomness (monte carlo)
 
-Calcium current is calculated with GHK
-
-Calcium_concentration uses the calcium current to update the concentration 
-of calcium at vesicles (C_vesicle) and channels (C).
+Second part calculates calcium current using GHK. Then it calculates the calcium concentration useing the calcium current of calcium at vesicles (C_vesicle) and channels (C).
 
 Calculate neuro transmitter release using `NTdynamicsRHS_v5_core`
 
-This file is very important.
+Finally combines all this information to find the change over time in the following state variables
+
+* Calcium Channel States (# open or blocked)
+    -> Affects calcium influx.
+* Calcium Concentration (C_vesicles)
+* Calcium Current (I)
+* And all 4 from `NTdynamicsRHS_v5_core`
+
+Combines these into `dz`.
 
 https://github.com/evanwporter/cochlea-nerve/blob/19159e7c3610c42b41953590521d990e9c226f77/IHC/NTdynamicsRHS_v5_core.m#L37
 
