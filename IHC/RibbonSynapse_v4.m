@@ -14,13 +14,54 @@
 % RibbonSynapse_v4
 % Input Parameters
 %     num_channels: Number of calcium channels.
-%     xv: Positions of vesicles.
-%     xc: Positions of calcium channels.
+%     xv: Coords of vesicles.
+%     xc: Coords of calcium channels.
 %     distance_vesicle_membrane: Distance from vesicle membrane to calcium channels.
 %     channel_radius: Radius of calcium channels.
 %     vesicle_radius: Radius of vesicles.
-%     rho: Distance between each vesicle and each calcium channel, calculated in the constructor.
+%     
 
+% num_release_sites: # vesicles -> n
+% num_channels: # channels      -> M
+
+% rho is n x M matrix
+% rho is distance between each vesicle and each calcium channel 
+%   Euclidean distance ( |abs| ) - vesicle radius
+%   Calculated in the constructor.
+%   
+
+% cochlea-nerve\IHC\Transduction_v4_multi.m
+% f_TransmitterRelease = @(C) RibbonSynapse_v4.TransmitterRelease(C, tr_par{:});
+% Returned then by Transduction_v4_multi
+
+% Transduction_v4_multi called by Synapse
+% cochlea-nerve\IHC\Synapse.m
+
+% From there its saved to a mat file
+% At replicas.dir
+
+% Synapse is called by setSynapseResult
+% cochlea-nerve\Wrapper\Database\setSynapseResult.m
+% Replicas is passed to setSynapseResult
+
+% C:\Users\evanw\cochlea-nerve\Wrapper\Database\handleResult.m
+% handleResult.m creates anon func
+% model = @(rep) setSynapseResult( rep, ...
+%   const_src_data{:}, topt, antopt, runopt, paropt, memopt, ...
+%   antopt.fiber, setStructure ...
+% );
+
+% called here -> N = model(replicas(ind.create | ind.extend));
+
+% replicas(i).dir = res_dir
+
+
+% Alternatively TransmitterRelease is called by NTdynamicsRHS_v5_core
+% Which is passed concentration
+% Its is passed concentration by TransductionRHS_v5
+% C:\Users\evanw\cochlea-nerve\IHC\TransductionRHS_v5.m
+
+% Calcium concentration is created by Calcium concentration function
 
 classdef RibbonSynapse_v4
     %RIBBONSYNAPSE_V4 
@@ -253,6 +294,9 @@ classdef RibbonSynapse_v4
             end
         end
         function xc = channel_distribution(obj, n, M)
+            % Evan
+            % There is an element of randomness involved when calculating where channels lie.
+            % However the channels gennerally lie on distribution set by param
             
             param = obj.channel_distribution_parameters;
 

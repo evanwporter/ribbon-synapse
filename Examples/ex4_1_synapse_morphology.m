@@ -2,12 +2,13 @@
 % This will also estimate the channel location probability density
 % as a heatmap - runs for several minutes.
 
+% Auditory nerve fibers
 fiber_properties = fiber_properties_0522();
 
 fiber_properties = [ ...
     % fiber_properties.test_6
     fiber_properties.test_6_n4
-    ];
+];
 
 %%
 
@@ -26,3 +27,11 @@ for i = 1:numel(fiber_properties)
 end
 
 %%
+
+Vesicles (Gray and Blue Spheres):
+
+% Evan's Notes
+% Gray Spheres: Vesicles not currently releasing neurotransmitters.
+% Blue Spheres: Vesicles releasing neurotransmitters 
+
+% Red things: Calcium channels

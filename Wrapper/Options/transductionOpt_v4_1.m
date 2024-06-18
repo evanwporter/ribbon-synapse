@@ -174,7 +174,6 @@ classdef transductionOpt_v4_1 < Opt
                     );
 
             n = 100;
-
             XY = cell(1, n);
 
             for i = 1:n

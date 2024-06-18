@@ -1,3 +1,5 @@
+% Calc rate of change of z
+
 function [ dz ] = TransductionRHS_v5( t, z, ...
     size_info, channels, vesicles, ps, rate_y, rate_l, rate_x, rate_r, G_Ca, C_Ca_background, ...
     channels_open_ss_parameters_normal, channels_open_ss_parameters_burst, ...
@@ -105,6 +107,9 @@ cQ = cumsum(Q,1);
 
 ST = ['c', 'o'];
 
+% Evan
+% This section determines whether based on membrance potential (Vm) 
+%   channels are open or closed or blocked
 for ii = 1:channels.num
 
     if channels.state(ii) == 'i' % inactivated
@@ -195,8 +200,14 @@ C_channels = C_channels + C_Ca_background;
 
 open_channels = channels.state == 'o';
 
+% Evan -
+% I_GHK: Used for calculating calcium current flowing into hair cell
+%   Needed for determing local concentration of Calcium
+%       Which in tern is needed for calculating neurotransmitter release rate
+
 % I_ohm = calcium_current(Vt, G_Ca, open_channels, C_channels);
 I_GHK = calcium_current_GHK(Vt, G_Ca, open_channels, C_channels);
+
 
 % disp(mean(I_GHK(open_channels) ./ I_ohm(open_channels)));
 
@@ -286,6 +297,12 @@ I = I * amp_to_electron_per_second / charge; % ions/sec
 
 end
 
+% - Evan - 
+% Vm: Membrane potential
+% G: Channel conductance
+% area: membrane area
+% Used for calculating calcium current flowing into hair cell
+
 function I = calcium_current_GHK(Vm, G, m, C)
 arguments
     Vm (1,1) double
@@ -293,6 +310,7 @@ arguments
     m (:,1) double  % num_channel x 1
     C (:,1) double  % num_channel x 1
 end
+
 
 % Ca2+ ion charge
 charge = 2;
@@ -329,6 +347,10 @@ I = I * amp_to_electron_per_second / charge; % ions/sec
 
 end
 
+% vesicles: Struc w/ info about vesicles
+% ps: Struct w/ channel properties and states
+% it: Current iteration index
+% all_channel_switch: Boolean to decide on full channel update
 function [C_vesicle, C] = calcium_concentration(vesicles, ps, it, all_channel_switch)
 arguments
     vesicles
