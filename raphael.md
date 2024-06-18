@@ -50,6 +50,8 @@ https://github.com/evanwporter/cochlea-nerve/blob/19159e7c3610c42b41953590521d99
 
 ## Transduction_v4
 
+https://github.com/evanwporter/cochlea-nerve/blob/a9d084b5d8723044151d401e4a037e517410a432/IHC/Transduction_v4.m#L1-L2
+
 There's a lot going on here but this is where he does the ODE stuff. He uses a function called odeEuler to solve the ODE.
 
 https://github.com/evanwporter/cochlea-nerve/blob/3146900feea2064af26d5eec043a1f72d12819ad/Wrapper/Miscellaneous/odeEuler.m#L1-L2
