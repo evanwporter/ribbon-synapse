@@ -18,7 +18,7 @@ https://github.com/evanwporter/cochlea-nerve/blob/2a05a7d3f15e9140e37227bb996440
 
 TransmitterRelease is called by `NTdynamicsRHS_v5_core.m`.
 
-# NTdynamics
+## NTdynamics
 
 Calculates neurotransmitter change in states over time (dt).
 
@@ -48,8 +48,23 @@ Combines these into `dz`.
 
 https://github.com/evanwporter/cochlea-nerve/blob/19159e7c3610c42b41953590521d990e9c226f77/IHC/NTdynamicsRHS_v5_core.m#L37
 
+## Transduction_v4
 
-|-> NTdynamicsRHS_v5_core
+There's a lot going on here but this is where he does the ODE stuff. He uses a function called odeEuler to solve the ODE.
+
+https://github.com/evanwporter/cochlea-nerve/blob/3146900feea2064af26d5eec043a1f72d12819ad/Wrapper/Miscellaneous/odeEuler.m#L1-L2
+
+Under the hood this is actually the builtin `ode` function:
+
+https://github.com/evanwporter/cochlea-nerve/blob/3146900feea2064af26d5eec043a1f72d12819ad/Wrapper/Miscellaneous/odeEuler.m#L33-L39
+
+But basically he uses both `TransductionRHS_v5` and `NTdynamicsRHS_v5` as the ODEFUNC. This is probably the file to look at.
+
+He also used a custom function odeWrapper, which is just an interface for handling the results
+
+
+
+<!-- |-> NTdynamicsRHS_v5_core
 |-> TransductionRHS_v5
 |-> Transduction_v4
 |-> Transduction_v4_multi
@@ -59,4 +74,4 @@ https://github.com/evanwporter/cochlea-nerve/blob/19159e7c3610c42b41953590521d99
 |-> handleSynapseResult
 |-> ANT / ANT_clamp
 |-> oneANTjob / runANTmulti
-|-> ex4_2_synapse
+|-> ex4_2_synapse -->
