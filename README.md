@@ -38,3 +38,36 @@ edit globalOpt
 
 Now add the options for your system, which will be used based on your user and computername.
 
+EVANS NOTE:
+
+To make these changes run the following in the console:
+
+WINDOWS
+```
+getenv('username')
+getenv('computername')
+```
+
+MAC
+```
+getenv('user')
+getenv('hostname')
+```
+
+Then combine like so: `USERNAME@COMPUTERNAME`. Alternatively just type `userAndComputerName()` in the console to get this string.
+
+Next go to `Wrapper/Options/globalOpt.m/` line 100 and the following:
+
+```
+case 'USERNAME@COMPUTERNAME'
+    opt.resDir = '/CNresults/res';
+    opt.tmpDir = '/CNresults/tmp';
+    opt.scratchdir = ''; 
+```
+
+REGEX USED IN BEGINNING TO REMOVE ERRORS FROM `odeget`:
+```
+odeget\(options,\s?'(\w*)',([\w\d:'\[\]\-@]*),'fast'\)
+odeget(options,'$1',$2)
+```
+

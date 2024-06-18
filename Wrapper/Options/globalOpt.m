@@ -94,7 +94,10 @@ classdef globalOpt < Opt
                 opt.resDir = '~/CNresults/res';
                 opt.tmpDir = '~/CNresults/tmp';
                 opt.scratchdir = '';
-                
+            case 'evanw@DESKTOP-UP369HG'
+                opt.resDir = '/CNresults/res';
+                opt.tmpDir = '/CNresults/tmp';
+                opt.scratchdir = ''; 
             otherwise
                 error('The system %s is not configured. Add it to globalOpt to configure.', [opt.username, '@', opt.computer]);
 

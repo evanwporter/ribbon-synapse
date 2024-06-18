@@ -1,3 +1,27 @@
+% Evan's Notes 6/18/2024
+% Class models structure of ribbon synapse.
+% In particular distribution of calcium channels
+%   and vesicles and release of neurotransmitters
+% See figure 8 / section 2.9 of text
+
+
+% RibbonSynapse_v4::rho <- distance between Ca channels and vesicles
+% RibbonSynapse_v4::psi <- distance between Ca channels and other channels
+
+% RibbonStnapse_v4::TransmitterRelease <- Computes the rate of transmitter 
+%   release based on calcium concentration using Hill-Langmuir equation
+
+% RibbonSynapse_v4
+% Input Parameters
+%     num_channels: Number of calcium channels.
+%     xv: Positions of vesicles.
+%     xc: Positions of calcium channels.
+%     distance_vesicle_membrane: Distance from vesicle membrane to calcium channels.
+%     channel_radius: Radius of calcium channels.
+%     vesicle_radius: Radius of vesicles.
+%     rho: Distance between each vesicle and each calcium channel, calculated in the constructor.
+
+
 classdef RibbonSynapse_v4
     %RIBBONSYNAPSE_V4 
     
@@ -72,7 +96,10 @@ classdef RibbonSynapse_v4
             end
             
             f = fieldnames(args);
-            f = setdiff(f, {'plotflag', 'plot_histograms'});
+
+            % EVAN 6/18/2024 - adds these two flags to f if they aren't already there
+            f = setdiff(f, {'plotflag', 'plot_histograms'}); 
+
             for i = 1:numel(f)
                 obj.(f{i}) = args.(f{i});
             end
