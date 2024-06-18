@@ -14,7 +14,7 @@ This is important for modeling and visualizing. See below
 
 2) **Calculate Rate of Release of Neurotransmitters**: Uses Hill-Langmuir equation based on calcium concentration
 
-https://github.com/evanwporter/cochlea-nerve/blob/769ac0d265121edeef3496b53732817e2f28ef66/IHC/RibbonSynapse_v4.m#L98-L107
+https://github.com/evanwporter/cochlea-nerve/blob/2a05a7d3f15e9140e37227bb9964407e91b70c09/IHC/RibbonSynapse_v4.m#L98-L107
 
 TransmitterRelease is called by `NTdynamicsRHS_v5_core.m`.
 

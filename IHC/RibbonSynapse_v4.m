@@ -104,7 +104,7 @@ classdef RibbonSynapse_v4
             % k: is a 1 x M vector (where M is number of vesicles)
             %   Each element representes the number of neurotransmitters released
             %       per unit of time 
-        end
+        end 
     end
     
     methods
