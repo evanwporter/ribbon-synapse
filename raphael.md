@@ -20,7 +20,7 @@ TransmitterRelease is called by `NTdynamicsRHS_v5_core.m`.
 
 # NTdynamics
 
-Calculates neurotransmitter change over time (dt).
+Calculates neurotransmitter change in states over time (dt).
 
 
 ## TransductionRHS_v5

@@ -5,8 +5,8 @@ function [ dq, dc, dw, dc_proton, vesicles] = NTdynamicsRHS_v5_core( t, ...
     dt, C_vesicles)
 arguments
     t
-    q
-    c
+    q % vesicule has transmitter (1) or not (0); 1xM array
+    c 
     w
     c_proton
     vesicles
@@ -15,8 +15,8 @@ arguments
     x
     r
     transmitter_release_parameters
-    dt
-    C_vesicles
+    dt % time step
+    C_vesicles % calcium concentration of vesicle
 end
 %TRANSDUCTIONRHS
 
@@ -38,12 +38,17 @@ k1 = RibbonSynapse_v4.TransmitterRelease(C_vesicles, transmitter_release_paramet
 
 q_old = q;
 
-% released
-Nqk = NTTransport(q, k1*dt, M);
+% Nqk = number released from vesicle (random) <- dq : RoC of release
+% Nwx = number reprocessed <- RoC of repocess
+% NMqt = number created <- RoC of creation
+
+% dc_proton <- RoC of proton concentration
+
+Nqk = NTTransport(q, k1*dt, M); % number released from vesicle (random)
 q = q - Nqk;
 
 % reprocessed
-Nwx = NTReprocessing(~q, floor(w)*x*dt, M);
+Nwx = NTReprocessing(~q, floor(w)*x*dt, M); % number reprocessed
 q = q + Nwx;
 
 % manufactured
@@ -80,7 +85,7 @@ function N = NTManufacture(q, rho, n)
     end
 end
 function N = NTTransport(q, rho, n)
-    n_occupied = sum(q);
+    n_occupied = sum(q); % number occupied
     if n_occupied > 0
         N = q & (rand(n,1) < rho);
     else
