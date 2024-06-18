@@ -28,7 +28,7 @@ https://github.com/evanwporter/cochlea-nerve/blob/cc5499247e8e09865531b8ef920a54
 
 ## TransductionRHS_v5
 
-https://github.com/evanwporter/cochlea-nerve/blob/19159e7c3610c42b41953590521d990e9c226f77/IHC/TransductionRHS_v5.m#L110-L112
+https://github.com/evanwporter/cochlea-nerve/blob/19159e7c3610c42b41953590521d990e9c226f77/IHC/TransductionRHS_v5.m#L1
 
 First part of TransductionRHS determines whether based on membrance potential (`Vm`) channels are open or closed or blocked. It has an element of randomness (monte carlo)
 
