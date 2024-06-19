@@ -59,7 +59,7 @@ https://github.com/evanwporter/cochlea-nerve/blob/3146900feea2064af26d5eec043a1f
 
 odeEuler is an extrememly simple ODE solver. Solves the following equation
 
-$y_{n+1} = y_n + \delta t * f(t_n, y_n)$
+$y_{n+1} = y_n + \Delta t * f(t_n, y_n)$
 
 But basically he uses both `TransductionRHS_v5` and `NTdynamicsRHS_v5` as the ODEFUNC. This is probably the file to look at.
 
