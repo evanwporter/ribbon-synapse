@@ -10,7 +10,8 @@ This class models the structure of the ribbon synapse. This class does two thing
 
 1) **Models calcium channels and vesicles**: Randomly distributes channel and vesicle according to some shape (ie: `uniform ring`)
 
-This is important for modeling and visualizing. See below
+This is important for modeling and visualizing. See below.
+
 
 2) **Calculate Rate of Release of Neurotransmitters**: Uses Hill-Langmuir equation based on calcium concentration
 
