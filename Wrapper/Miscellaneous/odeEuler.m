@@ -2,6 +2,27 @@ function [ t, y ] = odeEuler( ode, tspan, y0, options, varargin )
 %ODEEULER
 %
 
+% This is an extremely simple way of solving an ODE
+% Uses formula $y_{n+1} = y_n + \delta t * f(t_n, y_n)$
+
+% Evan's Test Code
+% function dydt = simpleODE(t, y)
+%     dydt = -y + t;
+% end
+% options = struct('TimeStep', 0.1, 'UseOutputFcn', false);
+% [t, y] = odeEuler(@simpleODE, [0,10], 1, options)
+% EVAN: I added these because I was testing out this function
+%   and it kept giving me errors.
+if ~isfield(options, 'OutputFcn')
+    options.OutputFcn = [];
+end
+if ~isfield(options, 'OutputFcnEvalInterval')
+    options.OutputFcnEvalInterval = inf; % No interval if not specified
+end
+if ~isfield(options, 'Precompute')
+    options.Precompute = [];
+end
+
 dt = options.TimeStep;
 UseOutputFcn = options.UseOutputFcn;
 OutputFcn = options.OutputFcn;

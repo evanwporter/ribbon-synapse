@@ -56,13 +56,21 @@ There's a lot going on here but this is where he does the ODE stuff. He uses a f
 
 https://github.com/evanwporter/cochlea-nerve/blob/3146900feea2064af26d5eec043a1f72d12819ad/Wrapper/Miscellaneous/odeEuler.m#L1-L2
 
-Under the hood this is actually the builtin `ode` function:
+odeEuler is an extrememly simple ODE solver. Solves the following equation
 
-https://github.com/evanwporter/cochlea-nerve/blob/3146900feea2064af26d5eec043a1f72d12819ad/Wrapper/Miscellaneous/odeEuler.m#L33-L39
+$y_{n+1} = y_n + \delta t * f(t_n, y_n)$
 
 But basically he uses both `TransductionRHS_v5` and `NTdynamicsRHS_v5` as the ODEFUNC. This is probably the file to look at.
 
-He also used a custom function odeWrapper, which is just an interface for handling the results
+He also used a custom function odeWrapper, which is just an interface for handling the results.
+
+https://github.com/evanwporter/cochlea-nerve/blob/72247ca25071fc91b1c5b95c4a53867c2a4309cf/IHC/Transduction_v4.m#L382-L387
+
+It worth noting that if we plan to use `odeWrapper` in any significant way, then we may need to verify how it works since the author express some uncertainty over the mathematical components:
+
+https://github.com/evanwporter/cochlea-nerve/blob/72247ca25071fc91b1c5b95c4a53867c2a4309cf/externals/ode-wrapper/odeWrapper.m#L1-L4
+
+
 
 
 
