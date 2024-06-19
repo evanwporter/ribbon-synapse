@@ -61,7 +61,7 @@ odeEuler is an extrememly simple ODE solver. Solves the following equation
 
 $y_{n+1} = y_n + \Delta t * f(t_n, y_n)$
 
-But basically he uses both `TransductionRHS_v5` and `NTdynamicsRHS_v5` as the ODEFUNC. This is probably the file to look at.
+He uses both `TransductionRHS_v5` and `NTdynamicsRHS_v5` as the ODEFUNC. This is probably the file to look at. Note that `NTdynamicsRHS_v5` returns the output of `NTdynamicsRHS_v5_core`.
 
 He also used a custom function odeWrapper, which is just an interface for handling the results.
 
@@ -73,6 +73,14 @@ https://github.com/evanwporter/cochlea-nerve/blob/72247ca25071fc91b1c5b95c4a5386
 
 
 
+# Summary
+
+1. Initial conditions are set (y0)
+    1. Either the program has been run before and thus y0 = y(end)
+    2. Initial states are created
+2. Calcium current is calculated
+3. Calcium concentration is derived from current and other places
+4. Transmitter release is calculated.
 
 
 <!-- |-> NTdynamicsRHS_v5_core

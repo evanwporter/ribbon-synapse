@@ -332,6 +332,8 @@ switch replica.action
         y0 = y0';
 end
 
+disp("y0 is set")
+
 % parameters from Sumner 2002
 if isscalar(tropt.x), tropt.x = repmat(tropt.x,[n,1]); end
 if isscalar(tropt.y), tropt.y = repmat(tropt.y,[n,1]); end

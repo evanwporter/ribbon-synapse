@@ -28,8 +28,6 @@ end
 
 %%
 
-Vesicles (Gray and Blue Spheres):
-
 % Evan's Notes
 % Gray Spheres: Vesicles not currently releasing neurotransmitters.
 % Blue Spheres: Vesicles releasing neurotransmitters 
