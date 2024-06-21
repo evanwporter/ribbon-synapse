@@ -4,6 +4,8 @@ One of my takeaways from Section 2.9 in the paper was that the release of the ne
 
 We can start at the file [`RibbonSynapse_v4.m`](https://github.com/evanwporter/cochlea-nerve/blob/769ac0d265121edeef3496b53732817e2f28ef66/IHC/RibbonSynapse_v4.m#L66).
 
+Find out how channel open prob is done.
+
 ## Ribbon Synapse
 
 This class models the structure of the ribbon synapse. This class does two things:

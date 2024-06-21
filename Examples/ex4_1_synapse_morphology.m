@@ -6,7 +6,7 @@
 fiber_properties = fiber_properties_0522();
 
 fiber_properties = [ ...
-    % fiber_properties.test_6
+    % fiber_properties.test_1
     fiber_properties.test_6_n4
 ];
 
@@ -20,6 +20,8 @@ antopt = antOpt( ...
     'script', 'ANT', ...
     'ant', 'v4', ...
     'fiber', {{'regular_HSR_v1'}});
+
+% disp(antopt)
 
 for i = 1:numel(fiber_properties)
     antopt.transductionopt = transductionOpt_v4_1(antopt.ant, fiber_properties{i});

@@ -5,7 +5,8 @@ function [ dz ] = TransductionRHS_v5( t, z, ...
     channels_open_ss_parameters_normal, channels_open_ss_parameters_burst, ...
     transmitter_release_parameters, ...
     V_steady_state, ...
-    dt, Vt)
+    dt, ...
+    Vt)
 arguments
     t
     z
@@ -97,11 +98,16 @@ km0 = kp0 * exp(V0t * (beta - alpha));
 
 %% compute conductance
 
-kp = kp0 * exp(-alpha * Vt);
-km = km0 * exp(-beta * Vt);
+kp = kp0 * exp(-alpha * Vt); % E: Opening rate
+km = km0 * exp(-beta * Vt);  % E: Closing rate
 
 Q = [1 - kp*dt, km *dt; 
      kp*dt, 1 - km*dt];
+
+% EVAN
+% Q prob of transitioning between the closed (c) and open (o) states during a time step 
+%   1st row: prob of remaining closed (1 - k_p * dt) or transitioning to open (k_m \* dt).
+%   2nd row: prob of transitioning to closed (k_p * dt) or remaining open (1 - k_m * dt).
 
 cQ = cumsum(Q,1);
 

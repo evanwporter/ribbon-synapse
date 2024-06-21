@@ -196,7 +196,13 @@ else
         % call the solver setting `tspan = T{i}`
         switch func2str(SOLVER)
             case {'BDF2Solver', 'odeEuler'}
-                [t, y] = SOLVER(ode, T{i}, y0, options, varargin{:}, InterDivVars{:});
+                try
+                    [t, y] = SOLVER(ode, T{i}, y0, options, varargin{:}, InterDivVars{:});
+                catch exception
+                    disp(numel(varargin));
+                    disp(varargin);
+                    throw(exception)
+                end
             otherwise
                 if i > 1
                     options = odeset(options, 'InitialStep', diff(sol.x(end-1:end)));

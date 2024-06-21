@@ -265,6 +265,12 @@ switch replica.action
         % V0 = IHCVoltage(1,:)';
         % m0 = ChannelsOpenSS( Voltage(V0, 'V'), channels_open_ss_parameters_normal{:} );
 
+        % m0: Percent of open calcium channels
+        %   # of open states / by the total # of channels.
+        % C0: [Background calcium concentration] * num vesicles
+        % q0: # ready-to-release neurotransmitter in vesicles, set to ones
+        % w0: # neurotransmitters in the process of being reprocessed or recycled
+
         if isempty(antopt.initialConditions)
 
             % m0 = sum([channels.mode] == 1) / channels.num;
@@ -386,7 +392,7 @@ if strcmp(replica.action, 'create') && do_equlibration
         tropt.G_Ca, C_Ca_background, ...
         uconv(channels_open_ss_parameters_normal), ...
         uconv(channels_open_ss_parameters_burst), ...
-        uconv(transmitter_release_parameters), V_steady_state, dt );
+        uconv(transmitter_release_parameters), V_steady_state, dt, IHCVoltage);
    
     y0 = res_IC.y.y(end,:);
     y0 = y0';
@@ -400,7 +406,7 @@ end
     tropt.G_Ca, C_Ca_background, ...
     uconv(channels_open_ss_parameters_normal), ...
     uconv(channels_open_ss_parameters_burst), ...
-    uconv(transmitter_release_parameters), V_steady_state, dt );
+    uconv(transmitter_release_parameters), V_steady_state, dt, IHCVoltage ); % missing VT
 
 res.t.unit = simulation_units.Time;
 

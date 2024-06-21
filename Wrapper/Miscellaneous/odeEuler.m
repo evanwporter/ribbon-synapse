@@ -33,11 +33,11 @@ tf = tspan(2);
 
 [numSteps, numSamples, t] = odeEuler_tspan(tspan, dt);
 
-n = size(y0,1);
+n = size(y0, 1);
 
 y = zeros(numSamples,n);
 
-y(1,:) = y0;
+y(1, :) = y0;
 
 if isempty(options.Precompute)
     precomputed_args = [];
@@ -57,8 +57,13 @@ for i = 1:numSteps
         varargin{end} = precomputed_args(i,:);
     end
 
-    y(i+1,:) = y(i,:) + dt * ode(t(i+1), y(i,:)', varargin{:})';
-    
+    try
+        y(i+1,:) = y(i,:) + dt * ode(t(i+1), y(i,:)', varargin{:})';
+    catch exception
+        disp("t is a scalar"); disp(isscalar(t(i+1))); disp(t(i+1));
+        throw(exception)
+    end
+
     if UseOutputFcn
         if t(i+1) - OutputFcnEvalTime >= OutputFcnEvalInterval
             status = OutputFcn(t(i+1),y(i+1,:)',[]);

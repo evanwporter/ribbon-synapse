@@ -386,6 +386,11 @@ classdef RibbonSynapse_v4
                             q_new = r_excl./psi_loc_new;
                             q_new(q_new > 1) = 1;
 
+                            % disp('phi_loc:'); disp(phi_loc);
+                            % disp('phi_loc_new:'); disp(phi_loc_new);
+                            % disp('psi_loc:'); disp(psi_loc);
+                            % disp('psi_loc_new:'); disp(psi_loc_new);
+
                             F = [ ...
                                 lennard_jones(phi_loc, epsilon0, r0, n0);
                                 phi_loc.^0.15 / n
@@ -403,7 +408,10 @@ classdef RibbonSynapse_v4
                                 - boltzmann(psi_loc_new, m1, h1, s1);
                                 ...14*lennard_jones(min(phi_loc_new), epsilon0, r0, n0);
                                 ...lennard_jones(psi_loc_new, epsilon1, r1, n1);
-                                ];
+                            ];
+
+                            % disp('F:'); disp(F);
+                            % disp('F_new:'); disp(F_new);
 
                             deltaE = sum(F_new) - sum(F);
                             % deltaE is negative if X_new better than X
@@ -415,6 +423,7 @@ classdef RibbonSynapse_v4
                                 xc(k,:) = Xnew;
                             end
                         end
+                        % disp("IT");disp(it)
                     end
 
                 case 'uniform'
