@@ -1,6 +1,6 @@
 function st()
     % Define parameters for each configuration
-    configurations = {'r1', 'r2', 'm', 'i1', 'i2', 'i3', 'i4', 'i5'};
+    configurations = {'r1'}; % Add more configurations as needed
     
     % Voltage steps to simulate
     voltage_steps = linspace(-0.1, 0.1, 100);  % Example range from -100mV to 100mV
@@ -14,17 +14,19 @@ function st()
     
     for c = 1:length(configurations)
         config = configurations{c};
+        opts = SynapseOptions(config);  % Initialize options for this configuration
+        
         for v = 1:length(voltage_steps)
             Vt = voltage_steps(v);
             
             % Initialize synapse state (assuming initial conditions similar for all)
-            initial_state = initialize_synapse_state(config);
+            initial_state = initialize_synapse_state(opts);
             
             % Solve ODEs using ode15s
-            [~, state] = ode15s(@(t, y) synapse_dynamics(t, y, Vt, config), tspan, initial_state);
+            [~, state] = ode15s(@(t, y) synapse_dynamics(t, y, Vt, opts), tspan, initial_state);
             
             % Extract final neurotransmitter release rate
-            release_rates(v, c) = calculate_release_rate(state(end, :), config);
+            release_rates(v, c) = calculate_release_rate(state(end, :), opts);
         end
     end
 
@@ -42,10 +44,7 @@ function st()
     hold off;
 end
 
-function dy = synapse_dynamics(t, y, Vt, config)
-    % Load parameters for the given configuration
-    params = load_synapse_parameters(config);
-    
+function dy = synapse_dynamics(t, y, Vt, opts)
     % Extract state variables
     C_vesicles = y(1:10);    % Calcium concentration at vesicles
     c_proton = y(11);        % Proton concentration
@@ -54,48 +53,30 @@ function dy = synapse_dynamics(t, y, Vt, config)
     w = y(23);               % Neurotransmitter reprocessing
 
     % Calculate calcium current
-    I_GHK = calcium_current_GHK(Vt, params.G_Ca, C_vesicles, params.C_Ca_background);
+    I_GHK = calcium_current_GHK(Vt, opts.G_Ca, C_vesicles, opts.C_Ca_background);
     
     % Calculate calcium concentration
-    [C_vesicles, ~] = calcium_concentration(params.vesicles, params.ps, t, params.all_channel_switch);
+    [C_vesicles, ~] = calcium_concentration(opts.vesicles, opts.ps, t, opts.all_channel_switch);
     
     % Calculate neurotransmitter release dynamics
     [dq, dc, dw, ~, ~] = NTdynamicsRHS_v5_core(t, q, c, w, c_proton, ...
-        params.vesicles, params.rate_y, params.rate_l, params.rate_x, params.rate_r, ...
-        params.transmitter_release_parameters, params.dt, C_vesicles);
+        opts.vesicles, opts.rate_y, opts.rate_l, opts.rate_x, opts.rate_r, ...
+        opts.transmitter_release_parameters, opts.dt, C_vesicles);
     
     % Build the derivative of the state vector
     dy = [C_vesicles; c_proton; dq; dc; dw];  % Adjust based on state variables
 end
 
-function release_rate = calculate_release_rate(state, config)
+function release_rate = calculate_release_rate(state, opts)
     % Extract the neurotransmitter release rate from the state
     % Customize this based on your state variables and desired output
     release_rate = sum(state(12:21));  % Sum of the neurotransmitter free pool
 end
 
-function initial_state = initialize_synapse_state(config)
+function initial_state = initialize_synapse_state(opts)
     % Define the initial state of the synapse
     % Customize based on the synapse configuration
-    params = load_synapse_parameters(config);
-    initial_state = [params.C_initial * ones(10, 1); 0; ones(10, 1); 0; 0];  % Example initial state
-end
-
-function params = load_synapse_parameters(config)
-    % Load parameters specific to each synapse configuration
-    % Placeholder, customize this with actual parameters
-    params.G_Ca = 1e-12;  % Conductance in Siemens
-    params.C_Ca_background = 1e-6;  % Background calcium concentration in M
-    params.vesicles = struct('num', 10, 'close_channels', {1:10});  % Example
-    params.ps = struct('num', 10, 'concentration', {1:10});  % Example
-    params.rate_y = 0.5;  % Example
-    params.rate_l = 0.3;  % Example
-    params.rate_x = 0.2;  % Example
-    params.rate_r = 0.1;  % Example
-    params.transmitter_release_parameters = {1, 5, 0.5};  % Example
-    params.all_channel_switch = true;  % Example
-    params.dt = 1e-4;  % Time step
-    params.C_initial = 1e-7;  % Initial calcium concentration in M
+    initial_state = [opts.C_initial * ones(10, 1); 0; ones(10, 1); 0; 0];  % Example initial state
 end
 
 function I = calcium_current_GHK(Vm, G, C_in, C_background)

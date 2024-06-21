@@ -120,7 +120,14 @@ function N = NTTransport(q, rho, n)
     n_occupied = sum(q); % number occupied
     % disp("n_occupied"); disp(n_occupied)
     if n_occupied > 0
-        N = q & (rand(n,1) < rho);
+        try
+            N = q & (rand(n,1) < rho);
+        catch exception
+            disp(q);
+            disp(rho);
+            disp(n)
+            throw(exception)
+        end
     else
         N = zeros(size(q));
     end
