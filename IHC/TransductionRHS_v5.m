@@ -212,7 +212,9 @@ open_channels = channels.state == 'o';
 %       Which in tern is needed for calculating neurotransmitter release rate
 
 % I_ohm = calcium_current(Vt, G_Ca, open_channels, C_channels);
-I_GHK = calcium_current_GHK(Vt, G_Ca, open_channels, C_channels);
+I_GHK = calcium_current_GHK(-70, G_Ca, open_channels, C_channels);
+% I_GHK = calcium_current_GHK(Vt, G_Ca, open_channels, C_channels);
+
 
 
 % disp(mean(I_GHK(open_channels) ./ I_ohm(open_channels)));

@@ -57,12 +57,12 @@ for i = 1:numSteps
         varargin{end} = precomputed_args(i,:);
     end
 
-    try
-        y(i+1,:) = y(i,:) + dt * ode(t(i+1), y(i,:)', varargin{:})';
-    catch exception
-        disp("t is a scalar"); disp(isscalar(t(i+1))); disp(t(i+1));
-        throw(exception)
-    end
+    % try
+    y(i+1,:) = y(i,:) + dt * ode(t(i+1), y(i,:)', varargin{:})';
+    % catch exception
+    %     disp("func"); disp(varargin);
+    %     throw(exception)
+    % end
 
     if UseOutputFcn
         if t(i+1) - OutputFcnEvalTime >= OutputFcnEvalInterval

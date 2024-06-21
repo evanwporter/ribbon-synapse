@@ -118,7 +118,7 @@ function N = NTManufacture(q, rho, n)
 end
 function N = NTTransport(q, rho, n)
     n_occupied = sum(q); % number occupied
-    disp("n_occupied"); disp(n_occupied)
+    % disp("n_occupied"); disp(n_occupied)
     if n_occupied > 0
         N = q & (rand(n,1) < rho);
     else

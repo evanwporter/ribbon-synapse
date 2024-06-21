@@ -6,7 +6,7 @@ num_CaV13 = 84; %72;
 
 
 rs = RibbonSynapse_v4( ...
-    'plotflag', true, ...
+    'plotflag', false, ...
     'num_release_sites', num_release_sites, ...
     'num_channels',  num_CaV13, ...
     'channel_distribution_method', 'regular_band', ...
@@ -19,14 +19,17 @@ dt = .5;  % Time step
 
 
 %%
-num_vesicles = rs_regular.num_release_sites;
+% num_vesicles = rs_regular.num_release_sites;
 
-% https://github.com/evanwporter/cochlea-nerve/blob/4e8b4f18f20782bfc39d88589db9f4e04dbcf507/Wrapper/Options/transductionOpt_v4_1.m#L354-L355
+% https://github.com/evanwporter/cochlea-nerve/blob/cc845a8870e4825796b05a13568a15e4361ce6cf/IHC/Transduction_v4.m#L121-L122
+% num_vesicles = tropt.num_release_sites - tropt.num_inactive_release_sites;
+
 
 % https://github.com/evanwporter/cochlea-nerve/blob/4e8b4f18f20782bfc39d88589db9f4e04dbcf507/Wrapper/Options/transductionOpt_v4_1.m#L335-L336
 tau_CaV13 = Time(500, 'us'); % see Zampini 2010 Table 1
 tau_CaV13_blocked = Time(1, 'ms');
 
+% https://github.com/evanwporter/cochlea-nerve/blob/cc845a8870e4825796b05a13568a15e4361ce6cf/IHC/Transduction_v4.m#L147-L148
 channels = Channels(num_CaV13, tau_CaV13.s, tau_CaV13_blocked.s)
 
 
@@ -159,4 +162,4 @@ dz = TransductionRHS_v5(t, z, size_info, channels, vesicles, ps, rate_y, rate_l,
 
 % Output the rate of change of neurotransmitter release
 fprintf('Rate of change of neurotransmitter release (dq):\n');
-disp(dq);
+disp(dq);a
