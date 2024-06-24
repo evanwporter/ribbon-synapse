@@ -4,7 +4,11 @@ classdef PointSource < handle
     % Evan's Notes
     % d : dimensionality
     % D : diffusion coefficient
-    % r : vector of distances from the point source to the point of interest
+    % r : vector of distances from the point source to the point of interest 
+    %   (where concentration needs to be calculated)
+
+    % nr : # distances
+    % nt : # time intervals
 
     
     properties
@@ -40,7 +44,7 @@ classdef PointSource < handle
                 D  (1,1) double {mustBePositive}
                 r  (:,1) double {mustBePositive}
                 dt (1,1) double {mustBePositive}
-                it (1,:) double {mustBeNonnegative, mustBeInteger}
+                it (1,:) double {mustBeNonnegative, mustBeInteger} % time array
 
                 args.max_history (1,1) double {mustBePositive} = +inf
                 args.rel_tol (1,1) double {mustBeNonnegative} = 0
@@ -77,7 +81,6 @@ classdef PointSource < handle
             
             % obj.e_pre = obj.e(it);
             obj.e_pre_rev = obj.e(flip(it)); % reversed order
-            
             
             %%
             

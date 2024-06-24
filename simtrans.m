@@ -32,6 +32,8 @@ channels_open_ss_parameters_burst = tropt.generate_channels_open_ss_parameters('
 transmitter_release_parameters = tropt.generate_transmitter_release_parameters(x_pos);
 
 
+x_pos = 0.5;
+
 %% https://github.com/evanwporter/cochlea-nerve/blob/cc845a8870e4825796b05a13568a15e4361ce6cf/IHC/Transduction_v4.m#L75-L81
 C_Ca_background_base = 17.1e-6; % M
 C_Ca_background_apex = 40.6e-6; % M

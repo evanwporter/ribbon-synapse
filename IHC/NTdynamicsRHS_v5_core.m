@@ -24,9 +24,6 @@ C_vesicles = C_vesicles(:);
 
 M = vesicles.num;
 
-% disp("W"); disp(w);
-% disp("c"); disp(c)
-
 %% Transmitter Release and Recycling
 
 kmax = transmitter_release_parameters{1};

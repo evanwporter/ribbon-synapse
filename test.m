@@ -124,7 +124,6 @@ c = 0; % Initial cleft concentration
 w = 0; % Initial reprocessing concentration 
 c_proton = 0; % Initial proton concentration
 
-
 % Need to convert x, y, l, r to Hz
 
 % Initialize m (fraction of open Ca2+ channels)
