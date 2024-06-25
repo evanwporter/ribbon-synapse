@@ -45,7 +45,7 @@ function SynapseDynamics()
     V_steady_state = -70; % Example value in mV
 
     % Simulation using odeEuler with TransductionRHS_v5
-    [t_out, y_out] = odeEuler(@Trans, tspan, initial_state, solveropt, ...
+    [t_out, y_out] = odeEuler(@TransductionRHS_v6, tspan, initial_state, solveropt, ...
                               opts, V_steady_state, opts.dt, Vt);
 
     calc_q_released(t_out, y_out, opts);

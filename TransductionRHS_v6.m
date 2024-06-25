@@ -1,6 +1,6 @@
 % Calc rate of change of z
 
-function [ dz ] = Trans( t, z, opts, ...
+function [ dz ] = TransductionRHS_v6( t, z, opts, ...
     V_steady_state, dt_, Vt)
 arguments
     t
