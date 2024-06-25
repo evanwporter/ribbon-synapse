@@ -1,42 +1,25 @@
-function SynapseDynamics()
+function SynapseDynamics2()
     % Voltage step to simulate
     Vt = -.01; % Voltage in mV
-    voltage_steps = linspace(-.07, -.05, 20);
+    voltage_steps = linspace(-.07, -.005, 20);
     
     % Initialize options
-    opts = SynapseOptions();
+    opts = SynapseOptions2();
     
     % Set simulation time parameters
-    tspan = opts.tspan(1):opts.dt:opts.tspan(end);
-
-    % % Initialize results
-    % release_rates = zeros(1, length(voltage_steps));
-    % 
-    % for v = 1:length(voltage_steps)
-    %     Vt = voltage_steps(v);
-    %     initial_state = initialize_synapse_state(opts);
-    %     solveropt = solverOpt('TimeStep', opts.dt);
-    %     V_steady_state = -70; % Example value in mV
-    %     [t_out, y_out] = odeEuler(@Trans, tspan, initial_state, solveropt, ...
-    %                               opts, V_steady_state, opts.dt, Vt);
-    % 
-    %     release_rates(v) = calc_q_released(t_out, y_out, opts);
-    % end
-    % 
-    % disp(release_rates)
+    % tspan = opts.tspan(1):opts.dt:opts.tspan(end);
 
     % Initialize state
     initial_state = initialize_synapse_state(opts);
 
     % Define solver options
-    solveropt = solverOpt('TimeStep', opts.dt);
+    % solveropt = solverOpt('TimeStep', opts.dt);
 
     % Set steady state voltage
     V_steady_state = -70; % Example value in mV
 
     % Simulation using odeEuler with TransductionRHS_v5
-    [t_out, y_out] = odeEuler(@Trans, tspan, initial_state, solveropt, ...
-                              opts, V_steady_state, opts.dt, Vt);
+    [t_out, y_out] = ode15s(@(t, y) Trans2(t, y, opts, V_steady_state, Vt), [0 1e-3], initial_state);
 
     calc_q_released(t_out, y_out, opts);
 

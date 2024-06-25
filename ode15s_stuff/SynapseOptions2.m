@@ -1,8 +1,8 @@
-classdef SynapseOptions
+classdef SynapseOptions2
     properties (SetAccess = immutable)
         % https://github.com/evanwporter/cochlea-nerve/blob/4e8b4f18f20782bfc39d88589db9f4e04dbcf507/Wrapper/Options/transductionOpt_v4_1.m#L354-L355
         num_release_sites (1,1) {mustBePositive, mustBeInteger} = 14;
-        num_CaV13 (1,1) {mustBePositive, mustBeInteger} = 84;
+        num_CaV13 (1,1) {mustBePositive, mustBeInteger} = 84; %72
 
         % https://github.com/evanwporter/cochlea-nerve/blob/50d39b91828e149530a871f8f2cffa432c6c53f0/Wrapper/Options/transductionOpt_v4_1.m#L15-L18
         Ca_diffusion_coefficient (1,1) double {mustBePositive} = 5.2e-10;
@@ -65,20 +65,18 @@ classdef SynapseOptions
         % https://github.com/evanwporter/cochlea-nerve/blob/50d39b91828e149530a871f8f2cffa432c6c53f0/Wrapper/Options/transductionOpt_v4_1.m#L333
         G_Ca (1,1) double {mustBePositive} = 15e-12;
 
-        dt (1,1) double {mustBePositive} = 1e-4;
         tspan double {mustBeReal, mustBeFinite, mustBeNonnegative};
-
-        ribbon_synapse_properties struct;
-        h1 double;
 
     end
 
     properties
-        rs RibbonSynapse;
+        rs RibbonSynapse_v4;
+        dt (1,1) double {mustBePositive} = 1e-4;
+
     end
     
     methods
-        function obj = SynapseOptions()
+        function obj = SynapseOptions2()
 
             uconv = @(var) Unit.batch_convert(obj.simulation_units, var);
 
@@ -87,9 +85,7 @@ classdef SynapseOptions
             
             %% Set Time
 
-            obj.tspan = [0 obj.dt * 1e4];
-
-            [numSteps, numSamples] = odeEuler_tspan(obj.tspan, obj.dt);
+            obj.tspan = [0 1e-4 * 10];
 
             %% Channels
 
@@ -131,54 +127,17 @@ classdef SynapseOptions
             obj.r = Frequency(3290, 'Hz'); % to roughly match the time-constant of H&H
 
             % Initialize the RibbonSynapse
-            % obj.rs = RibbonSynapse( ...
-            %     'plotflag', true, ... 
-            %     'channel_distribution_method', 'uniform', ...
-            %     'num_channels', obj.num_CaV13, ...
-            %     'num_release_sites', obj.num_release_sites ...
-            % );
+            obj.rs = RibbonSynapse_v4('num_channels', obj.num_CaV13, 'num_release_sites', obj.num_release_sites);
 
-            obj.rs = RibbonSynapse( ...
-                'plotflag', false, ... 
-                'channel_distribution_method', 'regular_band_n', ...
-                'channel_distribution_parameters', struct(...
-                    'length', 24*20, ...
-                    'wpos', [-40, 0, 40] ...
-                ), ...
-                'num_channels', obj.num_CaV13, ...
-                'num_release_sites', obj.num_release_sites, ...
-                'vesicle_radius', 40, ...
-                'intervesicle_distance', 100 ...
-            );
-
-            % https://github.com/evanwporter/cochlea-nerve/blob/7911ffcf2ec1e14a187fbaf46c3635fc3d6ff42d/Wrapper/Options/transductionOpt_v4_1.m#L361-L377
-            % obj.ribbon_synapse_properties = struct( ...
-            %     'distance_vesicle_membrane', 5, ... nm
-            %     'intervesicle_distance', [60,80], ...
-            %     'channel_radius', 4, ...
-            %     'vesicle_radius', 20 ...
-            % );
-            % obj.ribbon_synapse_properties.channel_distribution_method = 'LJ';
-            % obj.ribbon_synapse_properties.channel_distribution_parameters = struct( ...
-            %     's', 500, ...
-            %     'epsilon0', 0.1, ...
-            %     'r0', 130, ...
-            %     'n0', 4, ...
-            %     'm1', 10, ...
-            %     'h1', obj.h1, ...
-            %     's1', 3 ...
-            % );
-            % tmp = namedargs2cell(obj.ribbon_synapse_properties);
-            % obj.rs = RibbonSynapse(tmp{:});
+            d = 3; %           ...  geometry factor
 
             %% Create PointSources
-            d = 3; % geometry factor
             for i = 1:obj.num_CaV13
                 rho = obj.rs.rho(:,i) * 1e-9; % channel mouth--vesicle membrane distance
                 psi = obj.rs.psi(:,i) * 1e-9; % channel mouth--channel mouth distance
                 psi_nernst = sqrt(psi.^2 + obj.d_nernst.^2); % channel mouth--channel nernst point (above channel mouth)
                 r = [psi_nernst; rho];
-                obj.ps{i} = PointSource(d, obj.Ca_diffusion_coefficient, r, obj.dt, 0:numSamples, 'rel_tol', obj.Ca_conc_rel_tol);
+                obj.ps{i} = PointSource(d, obj.Ca_diffusion_coefficient, r);
             end
 
             %% https://github.com/evanwporter/cochlea-nerve/blob/cc845a8870e4825796b05a13568a15e4361ce6cf/IHC/Transduction_v4.m#L75-L81

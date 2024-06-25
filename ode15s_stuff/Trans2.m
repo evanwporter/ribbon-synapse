@@ -1,23 +1,32 @@
 % Calc rate of change of z
 
-function [ dz ] = Trans( t, z, opts, ...
-    V_steady_state, dt_, Vt)
+function [ dz ] = Trans2( t, z, opts, V_steady_state, Vt)
 arguments
     t
     z
     opts
     V_steady_state
-    dt_
     Vt
 end
 
-% persistent dt
-% persistent current_index
+persistent last_t
+persistent current_index
 
-% if isempty(last_t)
-%     last_t = -1e-12;  % Initialize on first call
-%     current_index = 1;
-% end 
+if isempty(last_t)
+    last_t = 0;
+    current_index = 1;
+end 
+
+% Compute timestep
+dt = t - last_t;
+if dt <= 0
+    disp(t)
+    dt = 1e-12;
+end
+last_t = t;
+
+
+% opts.dt= dt;
 
 Vt = Vt(:);
 
@@ -38,9 +47,6 @@ I_old = I;
 Ca_blocked_old = Ca_blocked;
 C_old = C_vesicles;
 
-% iteration index
-it = ceil(t/dt_);
-
 channels = opts.channels;
 vesicles = opts.vesicles;
 ps = opts.ps;
@@ -58,7 +64,7 @@ num_CaV13 = channels.num;
 
 p_block = CaV13.CaProtonBlock(c_proton);
 
-assert(dt_ / channels.tau_blocked <= 1);
+assert(dt / channels.tau_blocked <= 1);
 
 
 %% Calculate rates
@@ -79,14 +85,14 @@ km0 = kp0 * exp(V0t * (beta - alpha));
 kp = kp0 * exp(-alpha * Vt); % E: Opening rate
 km = km0 * exp(-beta * Vt);  % E: Closing rate
 
-Q = [1 - kp*dt_, km *dt_; 
-     kp*dt_, 1 - km*dt_];
+Q = [1 - kp*dt, km *dt; 
+     kp*dt, 1 - km*dt];
 
 
 % EVAN
 % Q prob of transitioning between the closed (c) and open (o) states during a time step 
-%   1st row: prob of remaining closed (1 - k_p * dt_) or transitioning to open (k_m \* dt_).
-%   2nd row: prob of transitioning to closed (k_p * dt_) or remaining open (1 - k_m * dt_).
+%   1st row: prob of remaining closed (1 - k_p * dt) or transitioning to open (k_m \* dt).
+%   2nd row: prob of transitioning to closed (k_p * dt) or remaining open (1 - k_m * dt).
 
 cQ = cumsum(Q,1);
 
@@ -110,7 +116,7 @@ for ii = 1:channels.num
     end
 
     % Block channel
-    if rand(1) < p_block * dt_ / channels.tau_blocked
+    if rand(1) < p_block * dt / channels.tau_blocked
 
         % generate random close time from a gamma distribution
         % such that the mean (= a*b) is equal to the channels.tau_blocked
@@ -165,18 +171,18 @@ else
 end
 
 C_channels = zeros(numel(ps),1);
-if it > 1
+if current_index > 1 % skip first index to allow concentration to be set
     for i = 1:numel(ps)
         if all_channel_switch
             if log_partial_concentrations
-                C = ps{i}.concentration(ind_r_channel, it - 1);
+                C = ps{i}.concentration(ind_r_channel, current_index - 1);
             else
                 C = ps{i}.concentration(ind_r_channel);
             end
             
             % Debugging Output
             if any(isinf(C))
-                warning('Infinite concentration detected at iteration %d for ps{%d}', it, i);
+                warning('Infinite concentration detected at iteration %d for ps{%d}', current_index, i);
                 disp('Concentration values:');
                 disp(C);
             end
@@ -189,7 +195,7 @@ if it > 1
             %     C_channels(i) = 1e3;
             % end
         else
-            C_channels{i} = ps{i}.concentration(ind_r_channel, it - 1);
+            C_channels{i} = ps{i}.concentration(ind_r_channel, current_index - 1);
         end
     end
 end
@@ -211,16 +217,16 @@ I_GHK = calcium_current_GHK(Vt, opts.G_Ca, open_channels, C_channels);
 I = I_GHK;
 
 for i = 1:numel(ps)
-    ps{i}.current(it) = - I(i); % minus because of convention
-    ps{i}.lastopen = channels.topen(i);
+    ps{i}.current(current_index) = - I(i); % minus because of convention
+    ps{i}.dt = dt;
 end
 
-[C_vesicles, C_all] = calcium_concentration(vesicles, ps, it, all_channel_switch);
+[C_vesicles, C_all] = calcium_concentration(vesicles, ps, current_index, all_channel_switch);
 
 
 for i = 1:numel(ps)
     if log_partial_concentrations
-        ps{i}.concentration(:, it) = C_all(:, i);
+        ps{i}.concentration(:, current_index) = C_all(:, i);
     else
         ps{i}.concentration = C_all(:, i);
     end
@@ -235,27 +241,29 @@ C_vesicles = C_vesicles + opts.C_Ca_background;
     q, c, w, c_proton, ...
     vesicles, opts.y.Hz, opts.l.Hz, opts.x.Hz, opts.r.Hz, ...
     opts.transmitter_release_parameters, ...
-    dt_, C_vesicles);
+    dt, C_vesicles);
 
 
     
 %% Build dz
 
-dm = (m - m_old) / dt_;
+dm = (m - m_old) / dt;
 
-dCa_blocked = (Ca_blocked - Ca_blocked_old) / dt_;
+dCa_blocked = (Ca_blocked - Ca_blocked_old) / dt;
 
 charge = 2;
 amp_to_electron_per_second = 6.242e18;
 
 I = sum(I) / amp_to_electron_per_second * charge;
-dI = (I - I_old) / dt_;
+dI = (I - I_old) / dt;
 
-dC = (C_vesicles - C_old) / dt_;
+dC = (C_vesicles - C_old) / dt;
 
 dz = [dm; dCa_blocked; dI; dC; dq; dc; dw; dc_proton];
 
-d_state = [d_state_inactivated; d_state_normal; d_state_burst] / dt_;
+d_state = [d_state_inactivated; d_state_normal; d_state_burst] / dt;
+
+current_index = current_index + 1;
 
 % dz = [dz; d_state];
 
@@ -320,11 +328,11 @@ end
 % ps: Struct w/ channel properties and states
 % it: Current iteration index
 % all_channel_switch: Boolean to decide on full channel update
-function [C_vesicle, C] = calcium_concentration(vesicles, ps, it, all_channel_switch)
+function [C_vesicle, C] = calcium_concentration(vesicles, ps, t, all_channel_switch)
     arguments
         vesicles
         ps
-        it
+        t
         all_channel_switch
     end
 
@@ -350,7 +358,7 @@ function [C_vesicle, C] = calcium_concentration(vesicles, ps, it, all_channel_sw
     
     % Calculate concentration from each channel
     for i = 1:num_channels
-        C(:,i) = ps{i}.iterate(it); % (num_vesicles + num_channels) x 1 array
+        C(:,i) = ps{i}.iterate(t); % (num_vesicles + num_channels) x 1 array
     end
     
     % Aggregate concentration for each vesicle

@@ -4,11 +4,7 @@ classdef PointSource < handle
     % Evan's Notes
     % d : dimensionality
     % D : diffusion coefficient
-    % r : vector of distances from the point source to the point of interest 
-    %   (where concentration needs to be calculated)
-
-    % nr : # distances
-    % nt : # time intervals
+    % r : vector of distances from the point source to the point of interest
 
     
     properties
@@ -44,7 +40,7 @@ classdef PointSource < handle
                 D  (1,1) double {mustBePositive}
                 r  (:,1) double {mustBePositive}
                 dt (1,1) double {mustBePositive}
-                it (1,:) double {mustBeNonnegative, mustBeInteger} % time array
+                it (1,:) double {mustBeNonnegative, mustBeInteger}
 
                 args.max_history (1,1) double {mustBePositive} = +inf
                 args.rel_tol (1,1) double {mustBeNonnegative} = 0
@@ -81,6 +77,7 @@ classdef PointSource < handle
             
             % obj.e_pre = obj.e(it);
             obj.e_pre_rev = obj.e(flip(it)); % reversed order
+            
             
             %%
             
@@ -144,36 +141,49 @@ classdef PointSource < handle
         function c = iterate(obj, it)
             arguments
                 obj
-                % j double            % current through channel
                 it (1,1) double    
             end
+        
+            c = zeros(obj.nr, 1);
+            current_t = it * obj.dt;
+            
+            % for i = 1:obj.nr
+            %     current_r = obj.r(i);
+            %     c(i) = (1 / (4 * pi * obj.D * current_t)^(obj.d / 2)) * exp(-current_r^2 / (4 * obj.D * current_t));
+            % end
 
-            c = zeros(obj.nr, numel(it));
-
-
+        
             for i = numel(it)
                 last_it_open = obj.lastopen / obj.dt;
                 if last_it_open < it(i) - obj.N
                     continue
                 end
                 n = it(i);
-
-                cc = zeros(obj.nr,1);
+            
+                cc = zeros(obj.nr, 1);
                 u_ondra_mex(obj.current, obj.e_pre_rev, n, n, obj.N, obj.nt, cc);
-                % disp(cc)
                 c(:, i) = cc;
-
-      
-                
+            
+            
+                if any(isinf(c(:, 1)) | isnan(c(:, 1)))
+                    % Logging
+                    disp(obj.u_ondra(obj.current, obj.e_pre_rev, n, n, obj.N, obj.nt, obj.nr));
+                    fprintf('Iteration: %d, Concentration: %f\n', i, c(:, i));
+                    fprintf('Current: %f, e_pre_rev: %f\n', obj.current, obj.e_pre_rev);
+                    error('Divergence detected at iteration %d\n', i);
+                end
+            end
+            
+            
+            
                 % c(:, i) = obj.u(obj.current,n,n);
                 % c(:, i) = obj.u_mex(obj.current,n,n);
-
+            
                 % cc(:, i) = obj.u(obj.current,n,n);
                 % if c(:,i) ~= 0
                 %     assert(all(abs((c(:,i)-cc(:,i))./c(:,i)) < 1e-14))
                 % end
-            end
-
+            
             % From the paper
             % For d = 1 and d = 3, Eq. (1) assumes that the ions are diffusing
             % into open space on both sides of the membrane. However, in the 
@@ -188,6 +198,34 @@ classdef PointSource < handle
             end
             
         end
+
+        function V = u_ondra(obj, J, E, n, nn, N, nt, nr)
+            % Initialize variables
+            mm = min(n, N);  % Minimum of current time step and max history length
+            m = N - mm;      % Starting index offset for the kernel values
+            k = nn - mm;     % Adjusted index for the current array J
+        
+            % Initialize output array
+            V = zeros(nr, 1);  % Output array for concentration
+
+            % k + j + 1 == it
+        
+            % Loop over spatial points
+            for i = 1:nr
+                V(i) = 0.0;  % Initialize concentration to zero
+                
+                % Loop over time steps up to mm
+                for j = 0:(mm - 1)
+                    ind = i + (m + j) * nr;  % Calculate index for accessing E array
+                    tmp = V(i) + J(k + j + 1) * E(ind);  % Sum the product of current and kernel value
+                    if isinf(tmp)
+                        disp("err");
+                    end
+                    V(i) = tmp;
+                end
+            end
+        end
+        
         
         % -----------------------------------------------------------------
         
