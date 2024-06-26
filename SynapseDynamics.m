@@ -1,52 +1,45 @@
 function SynapseDynamics()
-    % To reproduce results
-    rng(21,"twister") 
 
     % Voltage step to simulate
     Vt = -.01; % Voltage in mV
     voltage_steps = linspace(-.07, -.005, 20);
     
-    % Initialize options
     opts = SynapseOptions();
+
+    % To reproduce results
+    rng(opts.seed, "twister") 
     
-    % Set simulation time parameters
-    tspan = opts.tspan(1):opts.dt:opts.tspan(end);
+    tspan = opts.tspan_array;
 
     % Initialize results
-    % release_rates = zeros(1, length(voltage_steps));
-    %
+    release_rates = zeros(1, length(voltage_steps));
+
     % rs_s = ["r1"; "r2"; "i1"; "i2"; "i3"; "i4"; "i5"];
     % 
     % for rs = 1:length(rs_s)
     %     opts.rs = getSynapse(rs_s(rs));
     %     disp(rs_s(rs))
-    %     for v = 1:length(voltage_steps)
-    %         Vt = voltage_steps(v);
-    %         initial_state = initialize_synapse_state(opts);
-    %         solveropt = solverOpt('TimeStep', opts.dt);
-    %         V_steady_state = -70; % Example value in mV
-    %         [t_out, y_out] = odeEuler(@Trans, tspan, initial_state, solveropt, ...
-    %                                 opts, V_steady_state, opts.dt, Vt);
-    % 
-    %         release_rates(v) = calc_q_released(t_out, y_out, opts);
-    %     end
+    for v = 1:length(voltage_steps)
+        Vt = voltage_steps(v);
+        initial_state = initialize_synapse_state(opts);
+        solveropt = solverOpt('TimeStep', opts.dt);
+        V_steady_state = -70; % Example value in mV
+        [t_out, y_out] = odeEuler(@TransductionRHS_v6, tspan, initial_state, solveropt, ...
+                                opts, opts.dt, Vt);
+    
+        release_rates(v) = calc_q_released(t_out, y_out, opts);
+    end
     % 
     % end
 
-    % disp(release_rates)
+    disp(release_rates)
 
-    % Initialize state
     initial_state = initialize_synapse_state(opts);
-
-    % Define solver options
     solveropt = solverOpt('TimeStep', opts.dt);
-
-    % Set steady state voltage
-    V_steady_state = -70; % Example value in mV
 
     % Simulation using odeEuler with TransductionRHS_v5
     [t_out, y_out] = odeEuler(@TransductionRHS_v6, tspan, initial_state, solveropt, ...
-                              opts, V_steady_state, opts.dt, Vt);
+                              opts, opts.dt, Vt);
 
     calc_q_released(t_out, y_out, opts);
 
@@ -75,11 +68,9 @@ end
 
 
 function total_release = calc_q_released(t, z_array, opts)
-    % Find index range for q in the state vector
     q_start = opts.size_info.NT_free.start;
     q_end = opts.size_info.NT_free.end;
 
-    % Extract q values
     q_values = z_array(:, q_start:q_end);
 
     % Calculate total release by summing the decreases in q
@@ -93,7 +84,6 @@ function total_release = calc_q_released(t, z_array, opts)
         total_release = total_release + sum(released_this_step(released_this_step > 0));
     end
 
-    % Display total amount released
     disp("Total neurotransmitter released: " + total_release);
 end
 

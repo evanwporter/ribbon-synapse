@@ -12,7 +12,7 @@ end
 % ODE15s stuff
 % persistent dt
 % persistent current_index
-%
+
 % if isempty(last_t)
 %     last_t = -1e-12;  % Initialize on first call
 %     current_index = 1;
@@ -199,7 +199,6 @@ C_channels = C_channels + opts.C_Ca_background;
 
 open_channels = channels.state == 'o';
 
-
 %% Calculate current
 
 % Evan -
@@ -235,13 +234,7 @@ C_vesicles = C_vesicles + opts.C_Ca_background;
 
 %% Transmitter Release and Recycling
 
-% dq : RoC of Neurotransmitter contents in the vesicle; Num_Vesicle x 1
-% dc : RoC of Neurotransmitter concentration in the synaptic cleft ??
-% dw : Neurotransmitter Reprocessing rate
-% dc_proton : RoC of proton concentration in the synaptic cleft
-% vesicles : Updated vesicle state with NT release events logged (not used)
-
-[dq, dc, dw, dc_proton, vesicles] = NTdynamicsRHS_v6_core( t, ...
+[dq, dc, dw, dc_proton, vesicles] = NTdynamicsRHS_v5_core( t, ...
     q, c, w, c_proton, ...
     vesicles, opts.y.Hz, opts.l.Hz, opts.x.Hz, opts.r.Hz, ...
     opts.transmitter_release_parameters, ...
@@ -250,11 +243,6 @@ C_vesicles = C_vesicles + opts.C_Ca_background;
 
     
 %% Build dz
-
-% dm : RoC of fraction of open channels (m)
-% dCa_blocked : RoC of fraction of blocked channels (Ca_blocked)
-% dI : RoC of calcium current (I)
-% dC : RoC of calcium concentration at the vesicles (C_vesicles)
 
 dm = (m - m_old) / dt_;
 
@@ -338,6 +326,8 @@ function I = calcium_current_GHK(Vm, G, m, C)
     % epU = exp(U);
     
     Phi = P .* charge * F * U .* (Cin - Cout.*emU) ./ (1 - emU);
+    
+    
     
     I = Phi * area;
     

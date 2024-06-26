@@ -164,9 +164,8 @@ classdef PointSource < handle
                 u_ondra_mex(obj.current, obj.e_pre_rev, n, n, obj.N, obj.nt, cc);
                 c(:, i) = cc;
             
-            
+                % Error prevention
                 if any(isinf(c(:, 1)) | isnan(c(:, 1)))
-                    % Logging
                     disp(obj.u_ondra(obj.current, obj.e_pre_rev, n, n, obj.N, obj.nt, obj.nr));
                     fprintf('Iteration: %d, Concentration: %f\n', i, c(:, i));
                     fprintf('Current: %f, e_pre_rev: %f\n', obj.current, obj.e_pre_rev);
@@ -200,55 +199,29 @@ classdef PointSource < handle
         end
 
         function V = u_ondra(obj, J, E, n, nn, N, nt, nr)
-            % Initialize variables
-            mm = min(n, N);  % Minimum of current time step and max history length
-            m = N - mm;      % Starting index offset for the kernel values
-            k = nn - mm;     % Adjusted index for the current array J
+            % Evan's MATLAB version of the u_ondra.c
+            % For debugging purposes
+
+            mm = min(n, N);
+            m = N - mm;
+            k = nn - mm;
         
-            % Initialize output array
-            V = zeros(nr, 1);  % Output array for concentration
+            V = zeros(nr, 1);
 
             % k + j + 1 == it
         
-            % Loop over spatial points
             for i = 1:nr
-                V(i) = 0.0;  % Initialize concentration to zero
+                V(i) = 0.0; 
                 
-                % Loop over time steps up to mm
                 for j = 0:(mm - 1)
-                    ind = i + (m + j) * nr;  % Calculate index for accessing E array
-                    tmp = V(i) + J(k + j + 1) * E(ind);  % Sum the product of current and kernel value
+                    ind = i + (m + j) * nr; 
+                    tmp = V(i) + J(k + j + 1) * E(ind);  
                     if isinf(tmp)
                         disp("err");
                     end
                     V(i) = tmp;
                 end
             end
-        end
-        
-        
-        % -----------------------------------------------------------------
-        
-        function val = u_orig(r, chi, j, n, N, dt, d, D)
-            arguments
-                r (1,1) double      % distance from the channel
-                chi 
-                j double
-                n (1,1) double      % number of time intervals
-                N (1,1) double      % max number of time intervals to use in the computation
-                dt (1,1) double     % time step
-                d (1,1) double      % channel space setup parameter
-                D (1,1) double      % diffusion coefficient
-            end
-            %
-            % exact for N := n but very comp. demanding. N = 100 usually good approx.
-            %
-
-            % -- Original (without approx.) --
-            for m = 0:n-1 % min(n-1,N-1)
-                val = val + chi(n-m) * j(n-m) * e(m,r,dt,d,D);
-            end
-            
         end
         
         function val = u(obj, j, n, nn)

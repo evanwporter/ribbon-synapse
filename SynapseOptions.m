@@ -2,7 +2,7 @@ classdef SynapseOptions
     properties (SetAccess = immutable)
         % https://github.com/evanwporter/cochlea-nerve/blob/4e8b4f18f20782bfc39d88589db9f4e04dbcf507/Wrapper/Options/transductionOpt_v4_1.m#L354-L355
         num_release_sites (1,1) {mustBePositive, mustBeInteger} = 14;
-        num_CaV13 (1,1) {mustBePositive, mustBeInteger} = 84;
+        num_CaV13 (1,1) {mustBePositive, mustBeInteger} = 72;
 
         % https://github.com/evanwporter/cochlea-nerve/blob/50d39b91828e149530a871f8f2cffa432c6c53f0/Wrapper/Options/transductionOpt_v4_1.m#L15-L18
         Ca_diffusion_coefficient (1,1) double {mustBePositive} = 5.2e-10;
@@ -40,11 +40,11 @@ classdef SynapseOptions
 
         C_initial (1,1) double {mustBePositive} = 1e-7; % Initial calcium concentration in M
 
-        %% https://github.com/evanwporter/cochlea-nerve/blob/cc845a8870e4825796b05a13568a15e4361ce6cf/IHC/Transduction_v4.m#L75-L81
+        % https://github.com/evanwporter/cochlea-nerve/blob/cc845a8870e4825796b05a13568a15e4361ce6cf/IHC/Transduction_v4.m#L75-L81
         C_Ca_background_base (1,1) double {mustBePositive} = 17.1e-6; % M
         C_Ca_background_apex (1,1) double {mustBePositive} = 40.6e-6; % M
 
-        %% https://github.com/evanwporter/cochlea-nerve/blob/50d39b91828e149530a871f8f2cffa432c6c53f0/Wrapper/Options/transductionOpt_v4_1.m#L27-L28
+        % https://github.com/evanwporter/cochlea-nerve/blob/50d39b91828e149530a871f8f2cffa432c6c53f0/Wrapper/Options/transductionOpt_v4_1.m#L27-L28
         C_Ca_background_factor (1,1) double {mustBePositive} = 1;
 
         C_Ca_background (1,1) double;
@@ -67,14 +67,17 @@ classdef SynapseOptions
 
         dt (1,1) double {mustBePositive} = 1e-4;
         tspan double {mustBeReal, mustBeFinite, mustBeNonnegative};
+        tspan_array (:,1) double;
 
         ribbon_synapse_properties struct;
         h1 double;
 
+        seed (1,1) double = 21;
+
     end
 
     properties
-        rs RibbonSynapse;
+        rs RibbonSynapse_v5;
     end
     
     methods
@@ -87,7 +90,8 @@ classdef SynapseOptions
             
             %% Set Time
 
-            obj.tspan = [0 obj.dt * 1e4];
+            obj.tspan = [0 obj.dt * 1e2];
+            obj.tspan_array = obj.tspan(1):obj.dt:obj.tspan(end);
 
             [numSteps, numSamples] = odeEuler_tspan(obj.tspan, obj.dt);
 
@@ -130,16 +134,16 @@ classdef SynapseOptions
             obj.x = Frequency(66.3, 'Hz'); % Sumner 2002
             obj.r = Frequency(3290, 'Hz'); % to roughly match the time-constant of H&H
 
-            % Initialize the RibbonSynapse
-            % obj.rs = RibbonSynapse( ...
+            % obj.rs = RibbonSynapse_v5( ...
             %     'plotflag', true, ... 
             %     'channel_distribution_method', 'uniform', ...
             %     'num_channels', obj.num_CaV13, ...
             %     'num_release_sites', obj.num_release_sites ...
             % );
 
-            obj.rs = RibbonSynapse( ...
-                'plotflag', false, ... 
+            obj.rs = RibbonSynapse_v5( ...
+                'plotflag', true, ...
+                'plot_histograms', false, ...Ft
                 'channel_distribution_method', 'regular_band_n', ...
                 'channel_distribution_parameters', struct(...
                     'length', 24*20, ...
@@ -169,7 +173,7 @@ classdef SynapseOptions
             %     's1', 3 ...
             % );
             % tmp = namedargs2cell(obj.ribbon_synapse_properties);
-            % obj.rs = RibbonSynapse(tmp{:});
+            % obj.rs = RibbonSynapse_v5(tmp{:});
 
             %% Create PointSources
             d = 3; % geometry factor
@@ -264,15 +268,6 @@ classdef SynapseOptions
                 params{i} = par_base{i} + (par_apex{i} - par_base{i}) * x_pos;
             end
         end
-        
-        function obj = set.dt(obj, val)
-            for i = 1:obj.num_CaV13
-                obj.ps{i}.dt = val;
-            end
-            obj.dt = val;
-        end
-
-        
     end
 end
 

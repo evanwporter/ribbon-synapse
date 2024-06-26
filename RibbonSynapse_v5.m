@@ -63,7 +63,7 @@
 
 % Calcium concentration is created by Calcium concentration function
 
-classdef RibbonSynapse
+classdef RibbonSynapse_v5
     %RibbonSynapse 
     
     properties
@@ -108,7 +108,7 @@ classdef RibbonSynapse
     end
     
     methods
-        function obj = RibbonSynapse(args)
+        function obj = RibbonSynapse_v5(args)
             %RibbonSynapse
             % 74 Ca2+ channels (see text) and 14 docked vesicles (Wong et al., 2014).
             % The diameter of Ca2+ channels is ∼15 nm (Wolf et al., 2003), while that of vesicles is
@@ -220,7 +220,7 @@ classdef RibbonSynapse
             
             obj.area = area;
             
-            %%
+            %% Plotting
             
             if args.plotflag == true
             
