@@ -38,7 +38,7 @@ edit globalOpt
 
 Now add the options for your system, which will be used based on your user and computername.
 
-EVANS NOTE:
+### EVANS NOTES
 
 To make these changes run the following in the console:
 
