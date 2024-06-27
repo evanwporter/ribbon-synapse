@@ -4,6 +4,8 @@
 
 Calculates Neurotransmitter release given a voltage
 
+![rrate](https://github.com/evanwporter/ribbon-synapse/assets/115374841/e05fda34-cb92-4942-9b8b-3fcf107b55a8)
+
 Models Ribbon Synapse
 
 ![image](https://github.com/evanwporter/ribbon-synapse/assets/115374841/2b8a071d-d19e-449d-a228-a7f7d00c1db4)
