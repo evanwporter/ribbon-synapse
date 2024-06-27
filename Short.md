@@ -22,7 +22,7 @@
 * RoC of calcium current
 * RoC of calcium concentration at the vesicles
 
-These things combine into a state vector
+These things combine into a state vector which it solves as an ode
 
 ## How it does it 
 
