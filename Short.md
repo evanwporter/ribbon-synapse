@@ -32,8 +32,9 @@ These things combine into a state vector which it solves as an ode
 
 * GHK to calculate current
 * Calculate whether channel open or close (element of randomness here)
+* Homemade ODE solver that essentially loops through this $y_{n+1} = y_n + \Delta t * f(t_n, y_n)$
 
 ## Room For Improvement
 
-* `ODE15s` for stiff ODE, currently uses homemade function that essentially follows this: $y_{n+1} = y_n + \Delta t * f(t_n, y_n)$
+* `ODE15s` for stiff ODE. Current ODE solver may have issues with accuracy and computatationally be slow since it requires extremely small time steps to be effective.
 * Better method of calculating concentration of diffusion
