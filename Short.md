@@ -33,6 +33,7 @@ These things combine into a state vector which it solves as an ode
 * GHK to calculate current
 * Calculate whether channel open or close (element of randomness here)
 * Homemade ODE solver that essentially loops through this $y_{n+1} = y_n + \Delta t * f(t_n, y_n)$
+* The author chose to model the ribbon synapse a certain way, so I did what he did, but the possibilities for configurations of the rs are unlimited
 
 ## Room For Improvement
 
