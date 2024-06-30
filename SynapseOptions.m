@@ -90,7 +90,7 @@ classdef SynapseOptions
             
             %% Set Time
 
-            obj.tspan = [0 obj.dt * 1e2];
+            obj.tspan = [0 obj.dt * 1e3];
             obj.tspan_array = obj.tspan(1):obj.dt:obj.tspan(end);
 
             [numSteps, numSamples] = odeEuler_tspan(obj.tspan, obj.dt);

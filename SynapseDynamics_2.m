@@ -1,4 +1,4 @@
-function SynapseDynamics()
+function SynapseDynamics_2()
 
     % Voltage step to simulate
     Vt = -.01; % Voltage in mV
@@ -27,7 +27,7 @@ function SynapseDynamics()
         initial_state = initialize_synapse_state(opts);
         solveropt = solverOpt('TimeStep', opts.dt);
         V_steady_state = -70; % Example value in mV
-        [t_out, y_out] = odeEuler(@TransductionRHS_v6, tspan, initial_state, solveropt, ...
+        [t_out, y_out] = ode15s(@TransductionRHS_v6, tspan, initial_state, solveropt, ...
                                 opts, opts.dt, Vt);
     
         release_rates(v) = calc_q_released(t_out, y_out, opts);

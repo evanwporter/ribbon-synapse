@@ -45,9 +45,9 @@ void uu(double *J, double *E, double *V, mwSize n, mwSize nn, mwSize N, mwSize n
 /* The gateway function */
 void mexFunction( int nlhs, mxArray *plhs[],
                   int nrhs, const mxArray *prhs[])
-{                                                   // EVAN'S NOTES
-    double *J;               /* 1xN input matrix */ // Current 
-    double *E;               /* 1xN input matrix */ // Precomputed values
+{
+    double *J;               /* 1xN input matrix */
+    double *E;               /* 1xN input matrix */
     double n;                /* input scalar */
     double nn;               /* input scalar */
     double N;                /* input scalar */

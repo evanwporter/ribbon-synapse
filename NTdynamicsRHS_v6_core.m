@@ -1,7 +1,6 @@
 function [ dq, dc, dw, dc_proton, vesicles] = NTdynamicsRHS_v5_core( t, ...
     q, c, w, c_proton, ...
-    vesicles, y, l, x, r, ...
-    transmitter_release_parameters, ...
+    vesicles, opts, ...
     dt, C_vesicles)
 arguments
     t
@@ -10,11 +9,7 @@ arguments
     w
     c_proton
     vesicles
-    y
-    l
-    x
-    r
-    transmitter_release_parameters
+    opts
     dt % time step
     C_vesicles % calcium concentration of vesicle
 end
@@ -26,7 +21,7 @@ M = vesicles.num;
 
 %% Transmitter Release and Recycling
 
-kmax = transmitter_release_parameters{1};
+kmax = opts.transmitter_release_parameters{1};
 % n_Hill = transmitter_release_parameters{2};
 % KA_Hill = transmitter_release_parameters{3};
 
@@ -34,7 +29,7 @@ kmax = transmitter_release_parameters{1};
 
 % k1 ... single spot release rate
 % k1 = kmax .* Hill_Langmuir_A(C_vesicles, n_Hill, KA_Hill);
-k1 = RibbonSynapse_v4.TransmitterRelease(C_vesicles, transmitter_release_parameters{:});
+k1 = RibbonSynapse_v4.TransmitterRelease(C_vesicles, opts.transmitter_release_parameters{:});
 
 q_old = q;
 
@@ -52,23 +47,23 @@ q = q - Nqk;
 % disp("q");disp(q)
 
 % reprocessed
-Nwx = NTReprocessing(~q, floor(w)*x*dt, M); % number reprocessed
+Nwx = NTReprocessing(~q, floor(w) * opts.x.Hz * dt, M); % number reprocessed
 q = q + Nwx;
 
 % disp("# reproc"); disp(Nwx);
 
 % manufactured
-NMqy = NTManufacture(~q, y*dt, M);
+NMqy = NTManufacture(~q, opts.y.Hz*dt, M);
 q = q + NMqy;
 
 % disp(q); disp(q_old); disp(dt);
 
 % dq = (Nwx + NMqy - Nqk)/dt;
 dq = (q - q_old) / dt;
-dc = sum(Nqk) / dt - l .* c - r .* c;
-dw = r .* c - sum(Nwx) / dt;
+dc = sum(Nqk) / dt - opts.l.Hz .* c - opts.r.Hz .* c;
+dw = opts.r.Hz .* c - sum(Nwx) / dt;
 
-dc_proton = sum(Nqk)/dt - 0.9*l.*c_proton;
+dc_proton = sum(Nqk)/dt - 0.9 * opts.l.Hz .*c_proton;
 
 for i = 1:sum(Nqk)
     vesicles.logReleaseEvent(t);

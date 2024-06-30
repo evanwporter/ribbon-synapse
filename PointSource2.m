@@ -1,4 +1,4 @@
-classdef PointSource < handle
+classdef PointSource2 < handle
     %POINTSOURCE
 
     % Evan's Notes
@@ -13,9 +13,6 @@ classdef PointSource < handle
         r
         
         nr
-        nt
-        
-        dt
         
         N (1,1) double = +inf; % max history
         
@@ -31,33 +28,33 @@ classdef PointSource < handle
         
         current
         concentration
+        tspan
+        dt
     end
     
     methods
-        function obj = PointSource(d, D, r, dt, it, args)
+        function obj = PointSource2(d, D, r, dt, tspan, args)
             arguments
                 d  (1,1) double {mustBePositive, mustBeInteger, mustBeLessThanOrEqual(d, 3)}
                 D  (1,1) double {mustBePositive}
                 r  (:,1) double {mustBePositive}
                 dt (1,1) double {mustBePositive}
-                it (1,:) double {mustBeNonnegative, mustBeInteger}
+                tspan (1,:) double {mustBeNonnegative, mustBeNonempty}
 
                 args.max_history (1,1) double {mustBePositive} = +inf
-                args.rel_tol (1,1) double {mustBeNonnegative} = 0
+                args.rel_tol (1,1) double {mustBeNonnegative} = 1e-3
                 args.log_concentration (1,1) logical = false
             end
-            %POINTSOURCE
             
             obj.d = d;
             obj.D = D;
             obj.r = r;
+            obj.dt = dt;
             
             obj.nr = numel(r);
-            obj.nt = numel(it);
+            obj.tspan = tspan(1); % Initialize with the first time point
 
             obj.lastopen = -inf;
-            
-            obj.dt = dt;
             
             obj.rel_tol = args.rel_tol;
 
@@ -71,58 +68,43 @@ classdef PointSource < handle
                 approximation = false;
             end
             
-            %%
-            
             obj.u1_const = pi^(-d/2)/2/D * r.^(2-d);
             
-            % obj.e_pre = obj.e(it);
-            obj.e_pre_rev = obj.e(flip(it)); % reversed order
-            
-            
-            %%
+            % obj.e_pre = obj.e(1); 
+            obj.e_pre_rev = obj.e(1); % Initialize with the first element
             
             if args.rel_tol > 0
                 N = obj.find_max_history(args.rel_tol);
-                % fprintf('History of %d steps required for %g rel error.\n', N, args.rel_tol)
             elseif isfinite(args.max_history)
                 N = args.max_history;
             else
-                N = obj.nt;
+                N = 1; % Start with one element
             end
             
             mustBeInteger(N)
             obj.N = N;
             
-            tdim = 2;
-            
-            debug = false;
-            
             if approximation == true
-                approx_error_est = sum(obj.e_pre_rev(:,1:obj.nt - N), tdim) ./ sum(obj.e_pre_rev, tdim);
+                approx_error_est = sum(obj.e_pre_rev(:,1:N), 2) ./ sum(obj.e_pre_rev, 2);
 
-                if debug == true
-                    dbprintf('Approximation error estimate\n');
-                    for i = 1:obj.nr
-                        dbprintf('%8.2f%%   ... for r = %g\n', approx_error_est(i) * 100, r(i));
-                    end
-                end
-                
                 assert(all(approx_error_est < obj.rel_tol), sprintf('Error estimate > %g%%', obj.rel_tol * 100));
 
-                itt = flip(it(1:N));
-                obj.e_pre_rev = obj.e(itt); % reversed order
-
+                obj.e_pre_rev = obj.e(1:N); % Initialize with the first N elements
             end
             
-            obj.current = zeros(1, obj.nt);
+            obj.current = zeros(1, 1); % Initialize with one element
 
             if args.log_concentration
-                obj.concentration = zeros(obj.nr, obj.nt);
+                obj.concentration = zeros(obj.nr, 1); % Initialize with one element
             end
         end
         % -----------------------------------------------------------------
         function N = find_max_history(obj, tol)
-            
+            arguments
+                obj
+                tol (1,1) double {mustBeNonnegative}
+            end
+
             tdim = 2;
             
             err_est = cumsum(obj.e_pre_rev, tdim);
@@ -130,47 +112,62 @@ classdef PointSource < handle
             
             ind = zeros(obj.nr, 1);
             for i = 1:obj.nr
-                ind(i) = find(rel_err_est(i,:) > tol, 1) - 1;
+                % Find first index where relative error estimate exceeds the tolerance
+                %   Need to subtract 1 to get index
+                ind_val = find(rel_err_est(i,:) > tol, 1); 
+                if isempty(ind_val) || ind_val <= 2
+                    ind(i) = numel(obj.tspan); % If not found, use the maximum history
+                else
+                    ind(i) = ind_val - 1;
+                end
             end
-            assert(all(ind > 0));
-            N = obj.nt - min(ind);
             
+            % Make sure we have an indice
+            assert(all(ind > 0), 'Relative error estimate failed to exceed tolerance in all cases.');
+            N = numel(obj.tspan) - min(ind);
         end
         % -----------------------------------------------------------------
         
-        function c = iterate(obj, it)
+        function c = iterate(obj, t)
             arguments
                 obj
-                it (1,1) double    
+                t (1,1) double    
             end
         
             c = zeros(obj.nr, 1);
-            current_t = it * obj.dt;
             
-            % for i = 1:obj.nr
-            %     current_r = obj.r(i);
-            %     c(i) = (1 / (4 * pi * obj.D * current_t)^(obj.d / 2)) * exp(-current_r^2 / (4 * obj.D * current_t));
-            % end
+            current_t = t;
+            dt = current_t - obj.tspan(end);
 
+            obj.tspan(end + 1) = current_t; % Append new time to tspan
+
+            % Update e_pre_rev dynamically
+            obj.e_pre_rev = [obj.e(t) obj.e_pre_rev]; 
+            
+            if obj.rel_tol > 0
+                N = obj.find_max_history(obj.rel_tol);
+            else
+                N = obj.N;
+            end
+
+            N = 1;
+            
+            % last_it_open = obj.lastopen / dt;
+            % if last_it_open < numel(obj.tspan) - N
+            %     return
+            % end
+            n = numel(obj.tspan);
         
-            for i = numel(it)
-                last_it_open = obj.lastopen / obj.dt;
-                if last_it_open < it(i) - obj.N
-                    continue
-                end
-                n = it(i);
-            
-                cc = zeros(obj.nr, 1);
-                u_ondra_mex(obj.current, obj.e_pre_rev, n, n, obj.N, obj.nt, cc);
-                c(:, i) = cc;
-            
-                % Error prevention
-                if any(isinf(c(:, 1)) | isnan(c(:, 1)))
-                    disp(obj.u_ondra(obj.current, obj.e_pre_rev, n, n, obj.N, obj.nt, obj.nr));
-                    fprintf('Iteration: %d, Concentration: %f\n', i, c(:, i));
-                    fprintf('Current: %f, e_pre_rev: %f\n', obj.current, obj.e_pre_rev);
-                    error('Divergence detected at iteration %d\n', i);
-                end
+            % u_ondra_mex(obj.current, obj.e_pre_rev, n, n, N, numel(obj.tspan), c);
+            cc = obj.u_ondra(obj.current, obj.e_pre_rev, n, n, N, numel(obj.tspan), obj.nr);
+
+            c = cc            
+            % Error prevention
+            if any(isinf(c(:, 1)) | isnan(c(:, 1)))
+                % disp(obj.u_ondra(obj.current, obj.e_pre_rev, n, n, N, numel(obj.tspan), obj.nr));
+                fprintf('Iteration: %d, Concentration: %f\n', numel(obj.tspan), c(:, end));
+                fprintf('Current: %f, e_pre_rev: %f\n', obj.current, obj.e_pre_rev);
+                error('Divergence detected at iteration %d\n', i);
             end
             
             
@@ -202,14 +199,27 @@ classdef PointSource < handle
             % Evan's MATLAB version of the u_ondra.c
             % For debugging purposes
 
+            %  n : current time index
+            % nn : total number of time steps
+            %  N : max history length
+            % nt : number time steps in history
+            % nr : number of distances
+
+            % Effective history length
+            % Use the number of timesteps (nt) if N is larger this number
+            % Ensures we don't go beyond max history
             mm = min(n, N);
+
+            % Offset index for history length.
             m = N - mm;
+
+            % Offset index for current index
             k = nn - mm;
         
             V = zeros(nr, 1);
 
             % k + j + 1 == it
-        
+
             for i = 1:nr
                 V(i) = 0.0; 
                 
@@ -220,6 +230,40 @@ classdef PointSource < handle
                         disp("err");
                     end
                     V(i) = tmp;
+                end
+            end
+        end
+
+        function V = U_ONDRA(J, E, n, nn, N, nt, nr)
+            % Function to compute the weighted sum of J and E and update V.
+            %
+            % Inputs:
+            %   J  - Array of current values
+            %   E  - Array of precomputed values
+            %   n  - Current time index
+            %   nn - Total number of time steps
+            %   N  - Maximum history length
+            %   nt - Number of time steps in the history
+            %   nr - Number of spatial points (distances r)
+            %
+            % Output:
+            %   V  - Updated array based on weighted sum
+        
+            mm = min(n, N);
+            m = N - mm; % Adjusted start index for history length
+            k = nn - mm;
+        
+            V = zeros(nr, 1);
+        
+            for i = 1:nr
+                V(i) = 0.0;
+                for j = 0:(mm - 1)
+                    ind = i + (m + j) * nr;
+                    if (k + j + 1) > 0 && (k + j + 1) <= numel(J)
+                        V(i) = V(i) + J(k + j + 1) * E(ind);
+                    else
+                        warning('Index out of bounds: k + j + 1 = %d', k + j + 1);
+                    end
                 end
             end
         end
@@ -244,7 +288,7 @@ classdef PointSource < handle
             % end
             
             % exact for N := n but very comp. demanding. N = 100 usually good approx.
-            
+
             mm = min(n, obj.N);
             
             % m = obj.nt - mm + 1; % v1
@@ -253,8 +297,8 @@ classdef PointSource < handle
             % nn = numel(j);
             
             tdim = 2;
-
-            % je = j(nn:-1:(nn-mm+1)) .* obj.e_pre(:,1:mm);
+            
+             % je = j(nn:-1:(nn-mm+1)) .* obj.e_pre(:,1:mm);
             % je = flip(je, tdim);
             % val = sum(je, tdim);
             
@@ -282,7 +326,7 @@ classdef PointSource < handle
                 nn double
             end
 
-            val = u_mex(j, n, nn, obj.N, obj.nt, obj.e_pre_rev);
+            val = u_mex(j, n, nn, obj.N, numel(obj.tspan), obj.e_pre_rev);
             
         end
         % -----------------------------------------------------------------
@@ -300,7 +344,6 @@ classdef PointSource < handle
 
             % val = pi^(-d/2)/2/D * r^(2-d) * obj.U(r./sqrt(4*D*t), d);
             val = obj.u1_const .* obj.U(obj.r ./ sqrt(4*obj.D*t));
-
         end
         
         % -----------------------------------------------------------------

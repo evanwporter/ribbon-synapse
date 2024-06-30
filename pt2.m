@@ -1,6 +1,6 @@
 d = 3;  % Dimensionality
 D = 1e-6;  % Diffusion coefficient (m^2/s)
-r = [1e-6 2e6];%, 5e-6];  % Distances from the point source (meters)
+r = [1e-6, 2e-6, 5e-6];  % Distances from the point source (meters)
 dt = 10;  % Time step (seconds)
 total_time = 1000;  % Total simulation time (seconds)
 it = 0:dt:total_time;  % Time steps
@@ -8,37 +8,32 @@ it = 0:dt:total_time;  % Time steps
 frequency = 1;  % Frequency in Hz
 amplitude = 1e-9;  % 
 
-% Channels object
-num_channels = 1; 
-tau_CaV13 = 1e-3;
-tau_CaV13_blocked = 1e-2;
+% Initialize Channels object
+num_channels = 2;  % Total number of channels
+tau_CaV13 = 1e-3;  % Channel time constant (seconds)
+tau_CaV13_blocked = 1e-2;  % Blocked state time constant (seconds)
 channels = Channels(num_channels, tau_CaV13, tau_CaV13_blocked);
 
 % Ensure two channels are always open
 channels.state(:) = 'o';
 channels.topen(:) = 0;  % Initially open at time 0
 
-% Current input
-% current_input = amplitude * abs(sin(2 * pi * frequency * it));
-% current_input = amplitude * ones(size(it)); % constant current
-% current_input = amplitude * (1 + it / max(it)); % simple increasing current
-current_input = amplitude * (1 - it / max(it));   % decreasing
-
-
-
 % Initialize PointSource objects for each channel
 ps = cell(num_channels, 1);
 for i = 1:num_channels
-    ps{i} = PointSource(d, D, r, dt, 0:100);%, 'rel_tol', 1e-3);
+    ps{i} = PointSource(d, D, r, dt, it, 'rel_tol', 1e-3);
 end
+
+% Initial current input
+current_input = amplitude * abs(sin(2 * pi * frequency * it));
+% current_input = amplitude * ones(size(it)); % constant current
 
 concentrations = zeros(length(r), length(it), num_channels);
 for t = 1:length(it)
     for ch = 1:num_channels
-        % Needs to be done for iterate method to work
         if channels.state(ch) == 'o'
-            ps{ch}.current(t) = current_input(t);
-            channels.topen(ch) = it(t);
+            ps{ch}.current(t) = current_input(t);  % Set current at time step t if channel is open
+            channels.topen(ch) = it(t);  % Update last open time
             ps{ch}.lastopen = channels.topen(ch);
         end
         concentrations(:, t, ch) = ps{ch}.iterate(t);  % Compute concentration
@@ -46,7 +41,6 @@ for t = 1:length(it)
 end
 
 % Combine concentrations from all channels
-% There's only one so this doesn't do anything
 total_concentrations = sum(concentrations, 3);
 
 figure;

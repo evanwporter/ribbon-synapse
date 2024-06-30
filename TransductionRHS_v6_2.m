@@ -1,6 +1,6 @@
 % Calc rate of change of z
 
-function [ dz ] = TransductionRHS_v6( t, z, opts, dt_, Vt)
+function [ dz ] = TransductionRHS_v6_2( t, z, opts, dt_, Vt)
 arguments
     t
     z
@@ -10,13 +10,16 @@ arguments
 end
 
 % ODE15s stuff
-% persistent dt
-% persistent current_index
+persistent last_t
+persistent current_index
 
-% if isempty(last_t)
-%     last_t = -1e-12;  % Initialize on first call
-%     current_index = 1;
-% end 
+if isempty(last_t)
+    last_t = -1e-12;  % Initialize on first call
+    current_index = 0;
+end 
+
+current_index = current_index + 1;
+dt_ = t - last_t;
 
 Vt = Vt(:);
 
@@ -199,6 +202,7 @@ C_channels = C_channels + opts.C_Ca_background;
 
 open_channels = channels.state == 'o';
 
+
 %% Calculate current
 
 % Evan -
@@ -234,15 +238,25 @@ C_vesicles = C_vesicles + opts.C_Ca_background;
 
 %% Transmitter Release and Recycling
 
-[dq, dc, dw, dc_proton, vesicles] = NTdynamicsRHS_v5_core( t, ...
+% dq : RoC of Neurotransmitter contents in the vesicle; Num_Vesicle x 1
+% dc : RoC of Neurotransmitter concentration in the synaptic cleft ??
+% dw : Neurotransmitter Reprocessing rate
+% dc_proton : RoC of proton concentration in the synaptic cleft
+% vesicles : Updated vesicle state with NT release events logged (not used)
+
+[dq, dc, dw, dc_proton, vesicles] = NTdynamicsRHS_v6_core( t, ...
     q, c, w, c_proton, ...
-    vesicles, opts.y.Hz, opts.l.Hz, opts.x.Hz, opts.r.Hz, ...
-    opts.transmitter_release_parameters, ...
+    vesicles, opts, ...
     dt_, C_vesicles);
 
 
     
 %% Build dz
+
+% dm : RoC of fraction of open channels (m)
+% dCa_blocked : RoC of fraction of blocked channels (Ca_blocked)
+% dI : RoC of calcium current (I)
+% dC : RoC of calcium concentration at the vesicles (C_vesicles)
 
 dm = (m - m_old) / dt_;
 
@@ -327,8 +341,6 @@ function I = calcium_current_GHK(Vm, G, m, C)
     
     Phi = P .* charge * F * U .* (Cin - Cout.*emU) ./ (1 - emU);
     
-    
-    
     I = Phi * area;
     
     amp_to_electron_per_second = 6.242e18;
@@ -376,7 +388,7 @@ function [C_vesicle, C] = calcium_concentration(vesicles, ps, it, all_channel_sw
     
     % Calculate concentration from each channel
     for i = 1:num_channels
-        C(:,i) = ps{i}.iterate(it) / 1e3; % (num_vesicles + num_channels) x 1 array
+        C(:,i) = ps{i}.simple_iterate(current_index, t) / 1e3; % (num_vesicles + num_channels) x 1 array
     end
     
     % Aggregate concentration for each vesicle

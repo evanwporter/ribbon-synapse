@@ -11,3 +11,7 @@ z contains
 * Calcium Concentration (C_vesicles)
 * Calcium Current (I)
 * And all 4 from `NTdynamicsRHS_v5_core`
+
+# Concentration
+
+$\[u2 = \left( \frac{r^{2-d}}{4D\pi^{d/2}} \right) \times (\sqrt{\pi} \cdot \text{erfc}(r / \sqrt{4Dt}))\]$
