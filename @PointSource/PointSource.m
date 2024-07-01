@@ -172,9 +172,7 @@ classdef PointSource < handle
         % -----------------------------------------------------------------
 
         function val = e(obj, m)
-            % 
             val = obj.u2((m+1) * obj.dt) - obj.u2(m * obj.dt);
-
         end
 
         function u2 = u2(obj, t)
