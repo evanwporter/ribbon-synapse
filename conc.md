@@ -1,6 +1,13 @@
 # Concentration Equation (Diffusion)
 
-$u(t) = \frac{r^{2-d}}{4 D \pi^{d/2}}  \sqrt{\pi} \exp{\frac{r}{\sqrt{4 D t}}}$
+$u(t) = \frac{|r|^{2-d}}{4 D \pi^{d/2}}  \sqrt{\pi} \exp{\frac{|r|}{\sqrt{4 D t}}}$
+
+Where:
+
+* $|r|$ : Distance from point source to point interest
+* $D$ : Diffusion constant
+* $d$ : Dimensionality (is that a word?). Can be 1, 2, or 3 but in our code this is three.
+* $t$ : $1 x n$ array of time steps
 
 $E = u(t + dt) - u(t)$
 
