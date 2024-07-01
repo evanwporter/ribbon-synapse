@@ -59,7 +59,7 @@ To estimate Concentration I used Rhiemann sums, ie: the rectangle method, for so
 
 I had to do a lot of online research and thinking to obtain this function. 
 
-### Concentration Comparison Images
+## Concentration Comparison Images
 
 Generated using sinusoidal current.
 
@@ -74,7 +74,7 @@ Generated using sinusoidal current.
 ![conc comp](https://github.com/evanwporter/ribbon-synapse/assets/115374841/a05ba945-d650-488f-867b-e6a11e87fe78)
 
 
-### Helpful Sources (in no particular order) (yes I know wikipedia is not the best source but it was still helpful so I included it)
+## Sources I Found Helpful (in no particular order) (yes I know wikipedia is not the best source but it was still helpful so I included it)
 
 * https://www.physics.uci.edu/~silverma/bseqn/bs/node5.html
 
