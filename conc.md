@@ -12,7 +12,7 @@ To illustrate what I mean, let $J = \{ J_1, J_2, J_3, \ldots, J_n \}$.
 
 It then takes the dot product of both arrays as follows:
 
-$ J_{n} E_1 + J_{n - 1} E_2 + J_{n - 2} E_3 + \ldots + J_{3} E_{n-2} + J_2 E_{n-1} + J_1 E_{n} $
+$J_{n} E_1 + J_{n - 1} E_2 + J_{n - 2} E_3 + \ldots + J_{3} E_{n-2} + J_2 E_{n-1} + J_1 E_{n}$
 
 As a side note since we measure it in three dimensions then the algo multiplies it by 2.
 
