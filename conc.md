@@ -14,6 +14,8 @@ It then takes the dot product of both arrays as follows:
 
 $ J_{n} E_1 + J_{n - 1} E_2 + J_{n - 2} E_3 + \ldots + J_{3} E_{n-2} + J_2 E_{n-1} + J_1 E_{n} $
 
+As a side note since we measure it in three dimensions then the algo multiplies it by 2.
+
 This is the interesting part, based on what the specified margin of error tolerance is specified the algorithm only takes the last N values of J (and first N values of E).
 
 This is what doesn't make sense to me, why we flip E (I believe he does this because the initial values of E have a larger effect than the later values). Also how he derived U and why he calculated E (change in U over a single time step). The paper doesn't mention this at all. 
