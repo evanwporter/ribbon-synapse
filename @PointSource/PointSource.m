@@ -132,6 +132,8 @@ classdef PointSource < handle
             tdim = 2;
             
             err_est = cumsum(obj.e_pre_rev, tdim);
+
+            % Gives the fraction of the total cumulative effect up to each time step
             rel_err_est = err_est ./ err_est(:,end);
             
             ind = zeros(obj.nr, 1);
@@ -142,10 +144,8 @@ classdef PointSource < handle
             N = obj.nt - min(ind);
             
         end
-        % -----------------------------------------------------------------
-        % function c = e_iterate(obj, it)
-        %     conc(C, I, r, t, D, dt, i-1);
-        % end
+
+        c = e_iterate(obj, it)        
 
         function c = simple_iterate(obj, it)
             % Evan's Simple version of iterate

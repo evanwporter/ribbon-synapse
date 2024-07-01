@@ -58,7 +58,7 @@ for i = 1:numSteps
     end
 
     try
-    y(i+1,:) = y(i,:) + dt * ode(t(i+1), y(i,:)', varargin{:})';
+        y(i+1,:) = y(i,:) + dt * ode(t(i+1), y(i,:)', varargin{:})';
     catch exception
         disp("func"); disp(varargin);
         throw(exception)

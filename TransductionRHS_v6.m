@@ -385,7 +385,7 @@ function [C_vesicle, C] = calcium_concentration(vesicles, ps, it, all_channel_sw
     
     % Calculate concentration from each channel
     for i = 1:num_channels
-        C(:,i) = ps{i}.iterate(it) / 1e3; % (num_vesicles + num_channels) x 1 array
+        C(:,i) = ps{i}.e_iterate(it) / 1e3; % (num_vesicles + num_channels) x 1 array
     end
     
     % Aggregate concentration for each vesicle

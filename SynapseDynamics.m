@@ -3,6 +3,7 @@ function SynapseDynamics()
     % Voltage step to simulate
     Vt = -.01; % Voltage in mV
     voltage_steps = linspace(-.07, -.005, 20);
+    voltage_steps = voltage_steps(10);
     
     opts = SynapseOptions();
 

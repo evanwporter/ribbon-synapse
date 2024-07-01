@@ -1,32 +1,30 @@
-function c = iterate(obj, it)
+function cc = iterate(obj, it)
     arguments
         obj
         it (1,1) double    
     end
 
     c = zeros(obj.nr, 1);
-    current_t = it * obj.dt;
+    % current_t = it * obj.dt;
 
-    for i = numel(it)
-        last_it_open = obj.lastopen / obj.dt;
-        if last_it_open < it(i) - obj.N
-            continue
-        end
-        n = it(i);
-    
-        cc = zeros(obj.nr, 1);
-        u_ondra_mex(obj.current, obj.e_pre_rev, n, n, obj.N, obj.nt, cc);
-        % cc = obj.u_ondra(obj.current, obj.e_pre_rev, n, n, obj.N, obj.nt, obj.nr);
-        c(:, i) = cc;
-    
-        % Error prevention
-        if any(isinf(c(:, 1)) | isnan(c(:, 1)))
-            disp(obj.u_ondra(obj.current, obj.e_pre_rev, n, n, obj.N, obj.nt, obj.nr));
-            fprintf('Iteration: %d, Concentration: %f\n', i, c(:, i));
-            fprintf('Current: %f, e_pre_rev: %f\n', obj.current, obj.e_pre_rev);
-            error('Divergence detected at iteration %d\n', i);
-        end
+    last_it_open = obj.lastopen / obj.dt;
+    if last_it_open < it - obj.N
+        return
     end
+    n = it;
+
+    cc = zeros(obj.nr, 1);
+    u_ondra_mex(obj.current, obj.e_pre_rev, n, n, obj.N, obj.nt, cc);
+    % cc = obj.u_ondra(obj.current, obj.e_pre_rev, n, obj.N, obj.nt, obj.nr);
+
+    % Error prevention
+    if any(isinf(cc | isnan(cc)))
+        disp(obj.u_ondra(obj.current, obj.e_pre_rev, n, obj.N, obj.nt, obj.nr));
+        fprintf('Iteration: %d, Concentration: %f\n', it, cc);
+        fprintf('Current: %f, e_pre_rev: %f\n', obj.current, obj.e_pre_rev);
+        error('Divergence detected at iteration %d\n', it);
+    end
+    
     
     
     
