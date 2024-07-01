@@ -16,6 +16,8 @@ classdef PointSource < handle
         nt
         
         dt
+
+        method
         
         N (1,1) double = +inf; % max history
         
@@ -33,7 +35,7 @@ classdef PointSource < handle
 
         lastopen
         
-        current
+        current (1, :) double;
         concentration
     end
     
@@ -43,12 +45,17 @@ classdef PointSource < handle
                 d  (1,1) double {mustBePositive, mustBeInteger, mustBeLessThanOrEqual(d, 3)}
                 D  (1,1) double {mustBePositive}
                 r  (:,1) double {mustBePositive}
-                dt (1,1) double {mustBePositive}
-                it (1,:) double {mustBeNonnegative, mustBeInteger}
+
+                dt (1,1) double {mustBeNonnegative} = 0
+                it (1,:) double {mustBeNonnegative} = 0
+
+                args.method string = "ondrej"; % Other methods are evan and ode15s
 
                 args.max_history (1,1) double {mustBePositive} = +inf
                 args.rel_tol (1,1) double {mustBeNonnegative} = 0
                 args.log_concentration (1,1) logical = false
+
+                % args.tspan (1, 2) double{mustBeNonnegative} = 0
             end
             %POINTSOURCE
             
@@ -57,71 +64,75 @@ classdef PointSource < handle
             obj.r = r;
             
             obj.nr = numel(r);
-            obj.nt = numel(it);
 
-            obj.lastopen = -inf;
-            
-            obj.dt = dt;
-            
-            obj.rel_tol = args.rel_tol;
+            obj.method = args.method;
 
-            if args.rel_tol > 0 && args.max_history < +inf
-                error('only one argument can be set to non-default value')
-            end
-            
-            if args.rel_tol > 0 || args.max_history < +inf
-                approximation = true;
-            else
-                approximation = false;
-            end
-            
-            %%
-            
-            % obj.u1_const = pi^(-d/2)/2/D * r.^(2-d);
-            
-            % obj.e_pre_rev = obj.e(it);
-            obj.e_pre_rev = obj.e(flip(it)); % reversed order
-            
-            
-            %%
-            
-            if args.rel_tol > 0
-                N = obj.find_max_history(args.rel_tol);
-                % fprintf('History of %d steps required for %g rel error.\n', N, args.rel_tol)
-            elseif isfinite(args.max_history)
-                N = args.max_history;
-            else
-                N = obj.nt;
-            end
-            
-            mustBeInteger(N)
-            obj.N = N;
-            
-            tdim = 2;
-            
-            debug = false;
-            
-            if approximation == true
-                approx_error_est = sum(obj.e_pre_rev(:,1:obj.nt - N), tdim) ./ sum(obj.e_pre_rev, tdim);
+            if not(obj.method == "ode15s")
+                    
+                obj.nt = numel(it);
 
-                if debug == true
-                    dbprintf('Approximation error estimate\n');
-                    for i = 1:obj.nr
-                        dbprintf('%8.2f%%   ... for r = %g\n', approx_error_est(i) * 100, r(i));
+                obj.lastopen = -inf;
+                
+                obj.dt = dt;
+                
+                obj.rel_tol = args.rel_tol;
+
+                if args.rel_tol > 0 && args.max_history < +inf
+                    error('only one argument can be set to non-default value')
+                end
+                
+                if args.rel_tol > 0 || args.max_history < +inf
+                    approximation = true;
+                else
+                    approximation = false;
+                end
+                
+                %%
+                
+                obj.e_pre_rev = obj.e(flip(it)); % reversed order
+                
+                
+                %%
+                
+                if args.rel_tol > 0
+                    N = obj.find_max_history(args.rel_tol);
+                    % fprintf('History of %d steps required for %g rel error.\n', N, args.rel_tol)
+                elseif isfinite(args.max_history)
+                    N = args.max_history;
+                else
+                    N = obj.nt;
+                end
+                
+                mustBeInteger(N)
+                obj.N = N;
+                
+                tdim = 2;
+                
+                debug = false;
+                
+                if approximation == true
+                    approx_error_est = sum(obj.e_pre_rev(:,1:obj.nt - N), tdim) ./ sum(obj.e_pre_rev, tdim);
+
+                    if debug == true
+                        dbprintf('Approximation error estimate\n');
+                        for i = 1:obj.nr
+                            dbprintf('%8.2f%%   ... for r = %g\n', approx_error_est(i) * 100, r(i));
+                        end
                     end
+
+                    assert(all(approx_error_est < obj.rel_tol), sprintf('Error estimate > %g%%', obj.rel_tol * 100));
+
+                    itt = flip(it(1:N));
+                    obj.e_pre_rev = obj.e(itt); % reversed order
+
+                end
+                
+                if args.log_concentration
+                    obj.concentration = zeros(obj.nr, obj.nt);
                 end
 
-                assert(all(approx_error_est < obj.rel_tol), sprintf('Error estimate > %g%%', obj.rel_tol * 100));
+                obj.current = zeros(1, obj.nt);
 
-                itt = flip(it(1:N));
-                obj.e_pre_rev = obj.e(itt); % reversed order
-
-            end
-            
-            obj.current = zeros(1, obj.nt);
-
-            if args.log_concentration
-                obj.concentration = zeros(obj.nr, obj.nt);
             end
 
             % obj.test_var = (2 / (4 * pi * obj.D .* obj.r)) * erfc(obj.r ./ sqrt(4 * obj.D .* it));
@@ -146,6 +157,33 @@ classdef PointSource < handle
         end
 
         c = e_iterate(obj, it)        
+
+        function C = dt_iterate(obj, time_array)
+            arguments
+                obj
+                time_array (1, :) double {mustBeNonnegative}
+            end
+            % t : time at which to evaluate the concentration
+            % r : array of distances from the source
+            % D : diffusion coefficient
+            % I : function handle for the source term I(t')
+            % dt : time step for the approximation
+
+            C = zeros(1, obj.nr);
+            
+            t = time_array(end);
+            
+            GF = @(t, t_prime, r) (4 * pi * obj.D * (t - t_prime))^(-3/2) * exp(-r^2 / (4 * obj.D * (t - t_prime)));
+            
+            for i = 1:obj.nr
+                for j = 2:(length(time_array) - 1)
+                    t_prime = time_array(j);
+                    dt = t_prime - time_array(j - 1);
+                    G = GF(t, t_prime, obj.r(i));
+                    C(i) = C(i) + obj.current(j) * G * dt;
+                end
+            end
+        end
 
         function c = simple_iterate(obj, it)
             % Evan's Simple version of iterate

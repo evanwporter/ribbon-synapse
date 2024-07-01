@@ -1,4 +1,4 @@
-classdef SynapseOptions
+classdef SynapseOptions < handle % handles allows updating properties by reference
     properties (SetAccess = immutable)
         % https://github.com/evanwporter/cochlea-nerve/blob/4e8b4f18f20782bfc39d88589db9f4e04dbcf507/Wrapper/Options/transductionOpt_v4_1.m#L354-L355
         num_release_sites (1,1) {mustBePositive, mustBeInteger} = 14;
@@ -65,9 +65,10 @@ classdef SynapseOptions
         % https://github.com/evanwporter/cochlea-nerve/blob/50d39b91828e149530a871f8f2cffa432c6c53f0/Wrapper/Options/transductionOpt_v4_1.m#L333
         G_Ca (1,1) double {mustBePositive} = 15e-12;
 
+        % Time Related Properties
+        ode15s_ (1,1) logical = false;
         dt (1,1) double {mustBePositive} = 1e-4;
         tspan double {mustBeReal, mustBeFinite, mustBeNonnegative};
-        tspan_array (:,1) double;
 
         ribbon_synapse_properties struct;
         h1 double;
@@ -78,6 +79,12 @@ classdef SynapseOptions
 
     properties
         rs RibbonSynapse_v5;
+        
+        current_index (1, 1) double {mustBeNonnegative} = 0;
+
+        tspan_array (1, :) double;
+
+        initial_state
     end
     
     methods
@@ -90,8 +97,14 @@ classdef SynapseOptions
             
             %% Set Time
 
-            obj.tspan = [0 obj.dt * 1e3];
-            obj.tspan_array = obj.tspan(1):obj.dt:obj.tspan(end);
+
+            if not(obj.ode15s_)
+                obj.tspan = [0 obj.dt * 1e3];
+                obj.tspan_array = obj.tspan(1):obj.dt:obj.tspan(end);
+            else
+                obj.tspan = [obj.dt 10];
+                obj.tspan_array = [0];
+            end
 
             [numSteps, numSamples] = odeEuler_tspan(obj.tspan, obj.dt);
 
@@ -182,7 +195,11 @@ classdef SynapseOptions
                 psi = obj.rs.psi(:,i) * 1e-9; % channel mouth--channel mouth distance
                 psi_nernst = sqrt(psi.^2 + obj.d_nernst.^2); % channel mouth--channel nernst point (above channel mouth)
                 r = [psi_nernst; rho];
-                obj.ps{i} = PointSource(d, obj.Ca_diffusion_coefficient, r, obj.dt, 0:numSamples, 'rel_tol', obj.Ca_conc_rel_tol);
+                if obj.ode15s_
+                    obj.ps{i} = PointSource(d, obj.Ca_diffusion_coefficient, r, 'method', 'evan');
+                else
+                    obj.ps{i} = PointSource(d, obj.Ca_diffusion_coefficient, r, obj.dt, 0:numSamples, 'rel_tol', obj.Ca_conc_rel_tol);
+                end
             end
 
             %% https://github.com/evanwporter/cochlea-nerve/blob/cc845a8870e4825796b05a13568a15e4361ce6cf/IHC/Transduction_v4.m#L75-L81

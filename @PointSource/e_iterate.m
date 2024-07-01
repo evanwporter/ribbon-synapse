@@ -4,7 +4,7 @@ function C = e_iterate(obj, it) % t, r, D, I, dt)
     % D : diffusion coefficient
     % I : function handle for the source term I(t')
     % dt : time step for the approximation
-
+    %
     % C = zeros(1, obj.nr);
     % 
     % t = it * obj.dt;

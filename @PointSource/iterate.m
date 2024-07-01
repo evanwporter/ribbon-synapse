@@ -4,7 +4,7 @@ function cc = iterate(obj, it)
         it (1,1) double    
     end
 
-    c = zeros(obj.nr, 1);
+    cc = zeros(obj.nr, 1);
     % current_t = it * obj.dt;
 
     last_it_open = obj.lastopen / obj.dt;
@@ -13,7 +13,6 @@ function cc = iterate(obj, it)
     end
     n = it;
 
-    cc = zeros(obj.nr, 1);
     u_ondra_mex(obj.current, obj.e_pre_rev, n, n, obj.N, obj.nt, cc);
     % cc = obj.u_ondra(obj.current, obj.e_pre_rev, n, obj.N, obj.nt, obj.nr);
 
@@ -24,10 +23,7 @@ function cc = iterate(obj, it)
         fprintf('Current: %f, e_pre_rev: %f\n', obj.current, obj.e_pre_rev);
         error('Divergence detected at iteration %d\n', it);
     end
-    
-    
-    
-    
+
         % c(:, i) = obj.u(obj.current,n,n);
         % c(:, i) = obj.u_mex(obj.current,n,n);
     
@@ -46,7 +42,7 @@ function cc = iterate(obj, it)
     
     if obj.d == 1 || obj.d == 3                
         % since u is linear with respect to j, we can multiply c
-        c = c * 2;
+        cc = cc * 2; % mols/m^3
     end
     
 end

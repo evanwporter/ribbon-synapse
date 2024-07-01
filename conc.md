@@ -1,13 +1,30 @@
 # Concentration Equation (Diffusion)
 
+For each Channel, concentration is calculated at two points of interest:
+
+1. At the vesicle
+2. At the channels
+
+It is a function of distance from source channel to point of interest and time.
+
+The equation we are trying to solve here is the single point source diffusion equation:
+
+$\frac{\partial C}{\partial t} = D \nabla^2 C(t, |r|) + I(t) \delta(|r|)$
+
+Where $I$ Is the current through the channel. It is calculated using the GHK equation:
+
+$\Phi = P_{Ca} z^2 \frac{VF^2}{RT} \frac{C_{in} - C_{out} \exp(-zVF/RT)}{1 - exp(-zVF / RT)}$
+
+The author calculated $C(|r|, t)$ as follows
+
 $u(t) = \frac{|r|^{2-d}}{4 D \pi^{d/2}}  \sqrt{\pi} \exp{\frac{|r|}{\sqrt{4 D t}}}$
 
 Where:
 
 * $|r|$ : Distance from point source to point interest
 * $D$ : Diffusion constant
-* $d$ : Dimensionality (is that a word?). Can be 1, 2, or 3 but in our code this is three.
-* $t$ : $1 x n$ array of time steps
+* $d$ : Dimensionality (is that a word?). Can be 1, 2, or 3 but in our code this is 3.
+* $t$ : 1 x n array of time steps
 
 $E = u(t + dt) - u(t)$
 
@@ -20,6 +37,8 @@ To illustrate what I mean, let $J = \{ J_1, J_2, J_3, \ldots, J_n \}$.
 It then takes the dot product of both arrays as follows:
 
 $J_{n} E_1 + J_{n - 1} E_2 + J_{n - 2} E_3 + \ldots + J_{3} E_{n-2} + J_2 E_{n-1} + J_1 E_{n}$
+
+To get Concentration $C(|r|, t)$
 
 As a side note since we measure it in three dimensions then the algo multiplies it by 2.
 
@@ -34,13 +53,13 @@ $2 * \frac{J_i}{4 \pi D r} \exp(\frac{r}{\sqrt{4 D t}})$
 ## Evan's Method
 Because of these issues I came up with my own method.
 
-$C(t, r) = \int_0^t \frac{I(t')}{(4\pi D (t - t'))^{3/2}} \exp\left(-\frac{|r|^2}{4D (t - t')}\right) \, dt'$
+$C(t, r) = \int_0^t \frac{I(t')}{(4\pi D (t - t'))^{3/2}} \exp(-\frac{|r|^2}{4D (t - t')}) \, dt'$
 
 To estimate Concentration I used Rhiemann sums, ie: the rectangle method, for solving integrals that I learned about in high school.
 
 I had to do a lot of online research and thinking to obtain this function. 
 
-### Helpful Sources (in no particular order) (yes I know wikipedia is not the best source but it was still helpful)
+### Helpful Sources (in no particular order) (yes I know wikipedia is not the best source but it was still helpful so I included it)
 
 * https://www.physics.uci.edu/~silverma/bseqn/bs/node5.html
 

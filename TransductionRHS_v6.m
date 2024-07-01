@@ -1,22 +1,34 @@
 % Calc rate of change of z
 
-function [ dz ] = TransductionRHS_v6( t, z, opts, dt_, Vt)
+function [ dz ] = TransductionRHS_v6( t, z, opts, Vt, dt)
 arguments
     t
     z
     opts
-    dt_
     Vt
+    dt = 0
 end
 
-% ODE15s stuff
-% persistent dt
-% persistent current_index
-%
-% if isempty(last_t)
-%     last_t = -1e-12;  % Initialize on first call
-%     current_index = 1;
-% end 
+% if any(t)
+%     disp(t)
+% end
+
+if opts.ode15s_
+    if t == opts.tspan_array(end)
+        dz = zeros(size(z));
+        warning("Time did not increase.")
+        return
+    end
+    opts.current_index = opts.current_index + 1;
+    it = opts.current_index;
+    dt_ = t - opts.tspan_array(end);
+    opts.tspan_array(opts.current_index + 1) = t;
+else
+    dt_ = dt;
+    % iteration index
+    it = ceil(t/dt_);
+end
+
 
 Vt = Vt(:);
 
@@ -37,9 +49,6 @@ I_old = I;
 Ca_blocked_old = Ca_blocked;
 C_old = C_vesicles;
 
-% iteration index
-it = ceil(t/dt_);
-
 channels = opts.channels;
 vesicles = opts.vesicles;
 ps = opts.ps;
@@ -57,7 +66,7 @@ num_CaV13 = channels.num;
 
 p_block = CaV13.CaProtonBlock(c_proton);
 
-assert(dt_ / channels.tau_blocked <= 1);
+% assert(dt_ / channels.tau_blocked <= 1);
 
 
 %% Calculate rates
@@ -110,6 +119,7 @@ for ii = 1:channels.num
     end
 
     % Block channel
+    % Check if channel becomes unblocked
     if rand(1) < p_block * dt_ / channels.tau_blocked
 
         % generate random close time from a gamma distribution
@@ -219,7 +229,7 @@ for i = 1:numel(ps)
     ps{i}.lastopen = channels.topen(i);
 end
 
-[C_vesicles, C_all] = calcium_concentration(vesicles, ps, it, all_channel_switch);
+[C_vesicles, C_all] = calcium_concentration(vesicles, ps, it, all_channel_switch, opts);
 
 for i = 1:numel(ps)
     if log_partial_concentrations
@@ -276,6 +286,13 @@ d_state = [d_state_inactivated; d_state_normal; d_state_burst] / dt_;
 if any(isnan(dz))
     error('NaN encountered')
 end
+
+
+% disp(['Time: ', num2str(t), ' dt: ', num2str(dt_)]);
+% disp(['State z: ', num2str(z')]);
+
+% disp(['Rate of change dz: ', num2str(dz')]);
+
 
 end
 
@@ -355,12 +372,13 @@ end
 % ps: Struct w/ channel properties and states
 % it: Current iteration index
 % all_channel_switch: Boolean to decide on full channel update
-function [C_vesicle, C] = calcium_concentration(vesicles, ps, it, all_channel_switch)
+function [C_vesicle, C] = calcium_concentration(vesicles, ps, it, all_channel_switch, opts)
     arguments
         vesicles
         ps
         it
         all_channel_switch
+        opts
     end
 
     if all_channel_switch
@@ -385,7 +403,11 @@ function [C_vesicle, C] = calcium_concentration(vesicles, ps, it, all_channel_sw
     
     % Calculate concentration from each channel
     for i = 1:num_channels
-        C(:,i) = ps{i}.e_iterate(it) / 1e3; % (num_vesicles + num_channels) x 1 array
+        if opts.ode15s_
+            C(:, i) = ps{i}.dt_iterate(opts.tspan_array) / 1e3;
+        else
+            C(:,i) = ps{i}.e_iterate(it) / 1e3; % (num_vesicles + num_channels) x 1 array
+        end
     end
     
     % Aggregate concentration for each vesicle

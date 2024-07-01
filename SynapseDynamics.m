@@ -10,13 +10,17 @@ function SynapseDynamics()
     % To reproduce results
     rng(opts.seed, "twister") 
     
-    tspan = opts.tspan_array;
+    if opts.ode15s_
+        tspan = opts.tspan;
+    else
+        tspan = opts.tspan_array;
+        solveropt = solverOpt('TimeStep', opts.dt);
+    end
 
     % Initialize results
     release_rates = zeros(1, length(voltage_steps));
 
-    initial_state = initialize_synapse_state(opts);
-    solveropt = solverOpt('TimeStep', opts.dt);
+    opts.initial_state = initialize_synapse_state(opts);
 
     % rs_s = ["r1"; "r2"; "i1"; "i2"; "i3"; "i4"; "i5"];
     % 
@@ -25,11 +29,16 @@ function SynapseDynamics()
     %     disp(rs_s(rs))
     for v = 1:length(voltage_steps)
         Vt = voltage_steps(v);
-        initial_state = initialize_synapse_state(opts);
-        solveropt = solverOpt('TimeStep', opts.dt);
-        V_steady_state = -70; % Example value in mV
-        [t_out, y_out] = odeEuler(@TransductionRHS_v6, tspan, initial_state, solveropt, ...
-                                opts, opts.dt, Vt);
+
+        if opts.ode15s_
+            warning("Ode15s is  experimental at this moment.")
+            options = odeset('RelTol',1e-3, 'AbsTol',1e-6, 'InitialStep', 1e-4);
+            [t_out, y_out] = ode15s(@(t, z) TransductionRHS_v6(t,z,opts,Vt), opts.tspan, opts.initial_state, options);
+        else
+            [t_out, y_out] = odeEuler(@TransductionRHS_v6, tspan, opts.initial_state, solveropt, ...
+                                    opts, Vt, opts.dt);
+        end
+        
     
         release_rates(v) = calc_q_released(t_out, y_out, opts);
     end
