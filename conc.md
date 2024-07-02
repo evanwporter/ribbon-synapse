@@ -59,6 +59,16 @@ To estimate Concentration I used Rhiemann sums, ie: the rectangle method, for so
 
 I had to do a lot of online research and thinking to obtain this function. 
 
+
+To obtain this I used Green's Function
+
+$G(r, t) = \frac{1}{(4 \pi D t)^{3/2}} \exp(-\frac{r^2}{4 D t})$
+
+Next we need to use convolution [^1][^2]:
+
+$(f * g)(t)=\int^{\infty}_{-\infty} f(\tau)g(t - \tau)\$
+
+
 ### Helpful Sources (in no particular order) (yes I know wikipedia is not the best source but it was still helpful so I included it)
 
 * https://www.physics.uci.edu/~silverma/bseqn/bs/node5.html
@@ -82,4 +92,10 @@ I had to do a lot of online research and thinking to obtain this function.
 * https://math.stackexchange.com/questions/2588931/green-s-function-for-the-heat-equation
 
 * https://www.damtp.cam.ac.uk/user/dbs26/1BMethods/GreensPDE.pdf
+
+
+[^1]: https://betterexplained.com/articles/intuitive-convolution/
+
+[^2]: https://developer.nvidia.com/discover/convolution
+
 

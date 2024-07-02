@@ -55,12 +55,12 @@ end
 
 % Combine concentrations from all channels
 % There's only one so this doesn't do anything
-total_concentrations2 = sum(concentrations, 3);
+total_concentrations = sum(concentrations, 3);
 
 figure;
 hold on;
 for i = 1:length(r)
-    plot(it, total_concentrations2(i, :), 'DisplayName', sprintf('Distance = %.1f um', r(i) * 1e6));
+    plot(it, total_concentrations(i, :), 'DisplayName', sprintf('Distance = %.1f um', r(i) * 1e6));
 end
 xlabel('Time (s)');
 ylabel('Concentration (mol/m^3)');
