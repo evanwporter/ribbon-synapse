@@ -1,14 +1,14 @@
-method = "evan s"
+method = "evans"
 
 d = 3;  % Dimensionality
 D = 5.2e-10;  % Diffusion coefficient (m^2/s)
 r = [2.5e-07 4e-7];%, 5e-6];  % Distances from the point source (meters)
-dt = 10;  % Time step (seconds)
-total_time = 1000;  % Total simulation time (seconds)
+dt = 1e-6;  % Time step (seconds)
+total_time = 10e-3;  % Total simulation time (seconds)
 it = 0:dt:total_time;  % Time steps
 
 frequency = 1;  % Frequency in Hz
-amplitude = 200e-12;  % 
+amplitude = 40e-12;
 
 % Channels object
 num_channels = 1; 
@@ -32,7 +32,7 @@ current_input = amplitude * abs(sin(2 * pi * frequency * it)); % sinusoidal curr
 ps = cell(num_channels, 1);
 for i = 1:num_channels
     ps{i} = PointSource(d, D, r, dt, it);%, 'rel_tol', 1e-3);
-    ps{i}.N = 100;
+    % ps{i}.N = 100;
 end
 
 
@@ -45,10 +45,14 @@ for t = 2:length(it)
             channels.topen(ch) = it(t);
             ps{ch}.lastopen = channels.topen(ch);
         end
+        % if t == 3
+        %     channels.state(1) = 'c';
+        % end
+
         if method == "evans"
             concentrations(:, t, ch) = ps{ch}.e_iterate(t);  % Compute concentration
         else
-            concentrations(:, t, ch) = ps{ch}.iterate(t);
+            concentrations(:, t, ch) = ps{ch}.iterate(t);% / 1000;
         end
     end
 end

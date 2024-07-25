@@ -3,21 +3,46 @@ t_total = 1000; % total time to compute the concentration
 dt = 10; % time step size in seconds
 D = 5.2e-10; % Diffusion coefficient (m^2/s)
 r = [1e-6, 5e-6]; % Distance from the source
+nr = 2;
 
 frequency = 1; % Frequency in Hz
-amplitude = 1e-9; % Amplitude of the source term
+amplitude = 40e-12; % Amplitude of the source term
 
-I = @(t) amplitude * abs(sin(2 * pi * frequency * t));
+I = @(t) amplitude * abs(sin(2 .* pi .* frequency .* t));
 
 it = 0:dt:t_total;
 nt = length(it);
 
-%% Compute
+%% Precompute Green's Function
+% G_array has 3 dim
+% dim 1 : distance (nr)
+% dim 2 : current time dim (nt)
+% dim 3 : prev time dim (t')
+%   forall <= dim 2 == 0
+
+% G_array = zeros(length(r), nt, nt);
+% for i = 1:length(r)
+%     for t = 1:nt
+%         for t_prime = 1:t-1
+%             G_array(i, t, t_prime) = greens_function(it(t), it(t_prime), r(i), D);
+%         end
+%     end
+% end
+
+G_array = PrecomputeGreen(r, it, D);
+
+%% Compute Concentration
 C = zeros(length(r), nt);
 
+% for i = 1:nt
+%     t = it(i);
+%     C(:,i) = approximate_solution(t, r, I, dt, G_array, it);
+% end
+
+I_array = I(it);
 for i = 1:nt
     t = it(i);
-    C(:,i) = approximate_solution(t, r, D, I, dt);
+    C(:,i) = CalcG(i, nr, I_array, dt, G_array, nt);
 end
 
 %% Display Results
@@ -32,52 +57,27 @@ legend;
 title('Calcium Concentration Over Time at Different Distances');
 hold off;
 
-% C1 = analytical_solution(t_total, r, D, I);
-% C2 = concG(t_total, r, D, I, dt);
-% C3 = approximate_solution(t_total, r, D, I, dt);
-% 
-% disp(['Integral Concentration at time t = ' num2str(t) ' and distance r = ' num2str(r) ': ' num2str(C1)]);
-% disp(['C Approximation Concentration at time t = ' num2str(t) ' and distance r = ' num2str(r) ' and time step of 10 : ' num2str(C2)]);
-% disp(['Approximation Concentration at time t = ' num2str(t) ' and distance r = ' num2str(r) ' and time step of 10 : ' num2str(C3)]);
 
-
-%% Functions
-function C = analytical_solution(t, r, D, I)
-    t_prime_min = 0;
-    t_prime_max = t;
-
-    integrand = @(t_prime) (I(t_prime) ./ (4 * pi * D * (t - t_prime)).^(3/2)) ...
-                            .* exp(-r^2 ./ (4 * D * (t - t_prime)));
-
-    C = integral(@(t_prime) integrand(t_prime), t_prime_min, t_prime_max, 'RelTol', 1e-8, 'AbsTol', 1e-12, 'ArrayValued', true);
-end
-
-function G = greens_function(t, t_prime, r, D)
-    if t == t_prime
-        G = 0; % Green's function is zero when t equals t_prime
-    else
-        G = (4 * pi * D * (t - t_prime))^(-3/2) * exp(-r^2 / (4 * D * (t - t_prime)));
-    end
-end
-
-function C = approximate_solution(t, r, D, I, dt)
+function C = approximate_solution(t, r, I, dt, G_array, it)
     % t : time at which to evaluate the concentration
     % r : array of distances from the source
     % D : diffusion coefficient
     % I : function handle for the source term I(t')
     % dt : time step for the approximation
+    % G_array : precomputed Green's function array
+    % it : time array
     
-    % Number steps 
+    % Number of steps
     ns = floor(t / dt);
 
     nr = length(r);
 
     C = zeros(1, nr);
 
-    for i = 1:nr
-        for j = 0:ns - 1
-            t_prime = j * dt;
-            G = greens_function(t, t_prime, r(i), D);
+    for i = 1:nr % distance
+        for j = 1:ns % time
+            t_prime = it(j);
+            G = G_array(i, ns+1, j);
             C(i) = C(i) + I(t_prime) * G * dt;
         end
     end

@@ -1,4 +1,4 @@
-function [ dq, dc, dw, dc_proton, vesicles] = NTdynamicsRHS_v5_core( t, ...
+function [ dq, dc, dw, dc_proton, vesicles] = NTdynamicsRHS_v6_core( t, ...
     q, c, w, c_proton, ...
     vesicles, opts, ...
     dt, C_vesicles)
@@ -21,7 +21,7 @@ M = vesicles.num;
 
 %% Transmitter Release and Recycling
 
-kmax = opts.transmitter_release_parameters{1};
+% kmax = opts.transmitter_release_parameters{1};
 % n_Hill = transmitter_release_parameters{2};
 % KA_Hill = transmitter_release_parameters{3};
 
@@ -108,6 +108,7 @@ function N = NTManufacture(q, rho, n)
         N = zeros(size(q));
     end
 end
+
 function N = NTTransport(q, rho, n)
     n_occupied = sum(q); % number occupied
     % disp("n_occupied"); disp(n_occupied)

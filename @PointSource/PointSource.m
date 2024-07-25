@@ -27,6 +27,7 @@ classdef PointSource < handle
 
         test_var
         time_array % evan
+        G_array
 
     end
     properties % (Transient) % transient property acces is slow (R2022a)
@@ -37,6 +38,8 @@ classdef PointSource < handle
         
         current (1, :) double;
         concentration
+
+        E
     end
     
     methods
@@ -90,6 +93,7 @@ classdef PointSource < handle
                 %%
                 
                 obj.e_pre_rev = obj.e(flip(it)); % reversed order
+
                 
                 
                 %%
@@ -134,6 +138,8 @@ classdef PointSource < handle
                 obj.current = zeros(1, obj.nt);
 
             end
+
+            obj.G_array = PrecomputeGreen(reshape(obj.r,1,[]), it, D);
 
             % obj.test_var = (2 / (4 * pi * obj.D .* obj.r)) * erfc(obj.r ./ sqrt(4 * obj.D .* it));
         end

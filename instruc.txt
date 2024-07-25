@@ -1,0 +1,78 @@
+Create a simple model of a cell in COMSOL.
+
+Create a box. This box will be the boundary conditions for the model. The center of the box will be at `(0, 0, h/2)`. 
+Where `h` is the height of the box.
+
+The bottom of the box will be on the x,y plane, where z is 0. This represents the impermeable cell membrance.
+
+The concentration at the other five sides of the box will be zero. This represents a boundary condition.
+
+At the point `(0, 0, 0)`, create a circle lying on the bottom of the box/cell membrane/x-y plane. This circle
+will diffuse`Calcium` at a constant flux and the circle will represent a channel.
+
+Create a sphere, this sphere will represent a vesicle. We are looking to measure the concentration at the vesiclse surface.
+
+The Vesicle either has a neurotransmitter (1) or does not have a neurotransmitter (0).
+
+Given the concentration at the vesicle, we then calculate the single spot neurotransmitter release rate using the line 
+`k1 = TransmitterRelease(C, transmitter_release_parameters{:});`. We obtain `transmitter_release_parameters` using 
+the line `transmitter_release_parameters = generate_transmitter_release_parameters(0.5);`
+
+`k1` is in units of `Hz`. So I believe we need to convert it to neurotransmitters released
+
+```
+function k = TransmitterRelease(C, k_max, n, KA)
+%   k_max: max neurotransmitter release
+%   C: calcium concentration        
+k = k_max .* Hill_Langmuir(C, n, KA);
+%   scaled between 0 and k_max
+% k: is a 1 x M vector (where M is number of vesicles)
+%   Each element representes the number of neurotransmitters released
+%       per unit of time 
+end 
+```
+
+```
+function [theta] = Hill_Langmuir(L, n, KA)
+% HILL_LANGMUIR 
+% https://en.wikipedia.org/wiki/Hill_equation_(biochemistry)
+%
+% theta ... fraction of the receptor bound by the ligand
+% L     ... ligand concentration
+% KA    ... ligand concentration producing half occupation
+% n     ... Hill coeficient
+theta = 1 ./ (1 + (KA./L).^n);
+end
+```
+
+```
+function params = generate_transmitter_release_parameters(x_pos)
+% x_pos: Is how much to interpolate between the apex and base
+%   base: Part closest to the middle ear. Stiffer and responds best to high-frequency sounds
+%   apex: Tip of the cochlea, farthest from the middle ear. Less stiff and responds best to low-frequency sounds
+
+% https://github.com/evanwporter/cochlea-nerve/blob/50d39b91828e149530a871f8f2cffa432c6c53f0/Wrapper/Options/transductionOpt_v4_1.m#L341-L350
+transmitter_release_parameters = struct( ...
+    'apex', {{ ...
+        Frequency(500, 'Hz'), ...
+        5.0, ...      % Hill's coefficient
+        100e-6}}, ... % Half activation [Ca2+ M]
+    'base', {{ ...
+        Frequency(500, 'Hz'), ...
+        5.0, ...
+        100e-6}} ...
+);
+
+par_base = transmitter_release_parameters.base;
+par_apex = transmitter_release_parameters.apex;
+
+params = cell(numel(par_base), 1);
+for i = 1:numel(par_base)
+    params{i} = par_base{i} + (par_apex{i} - par_base{i}) * x_pos;
+end
+end
+```
+
+
+
+

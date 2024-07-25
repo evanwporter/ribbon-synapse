@@ -1,4 +1,30 @@
-# Concentration Equation (Diffusion)
+# Program Overview
+
+## What It Does
+
+### Calculates Neurotransmitter release given a voltage
+
+![rrate](https://github.com/evanwporter/ribbon-synapse/assets/115374841/e05fda34-cb92-4942-9b8b-3fcf107b55a8)
+
+### Models Ribbon Synapse
+
+![image](https://github.com/evanwporter/ribbon-synapse/assets/115374841/2b8a071d-d19e-449d-a228-a7f7d00c1db4)
+
+## What It Can do
+
+* Calculate Neurotransmitter contents in the vesicle
+* Calculate RoC of Neurotransmitter concentration in the synaptic cleft
+* Calculate Neurotransmitter Reprocessing rate
+* Calculate RoC of proton concentration in the synaptic cleft
+* Model
+  * RoC of fraction of open channels
+  * RoC of fraction of blocked channels
+* RoC of calcium current
+* RoC of calcium concentration at the vesicles
+
+Since we give the initial condition we can calculate the actual value of any of the above points at any point in time.
+
+## Concentration Equation (Diffusion)
 
 For each Channel, concentration is calculated at two points of interest:
 
@@ -17,7 +43,9 @@ $\Phi = P_{Ca} z^2 \frac{VF^2}{RT} \frac{C_{in} - C_{out} \exp(-zVF/RT)}{1 - exp
 
 The author calculated $C(|r|, t)$ as follows
 
-$u(t) = \frac{|r|^{2-d}}{4 D \pi^{d/2}}  \sqrt{\pi} \exp{\frac{|r|}{\sqrt{4 D t}}}$
+$u(t) = \frac{|r|^{2-d}}{4 D \pi^{d/2}}  \sqrt{\pi} \verb!erfc!{\frac{|r|}{\sqrt{4 D t}}}$
+
+This is a form of the equation that I got (see below) using `erfc`
 
 Where:
 
@@ -59,20 +87,40 @@ To estimate Concentration I used Rhiemann sums, ie: the rectangle method, for so
 
 I had to do a lot of online research and thinking to obtain this function. 
 
-
 To obtain this I used Green's Function
 
 $G(r, t) = \frac{1}{(4 \pi D t)^{3/2}} \exp(-\frac{r^2}{4 D t})$
 
-Next we need to use convolution [^1][^2]:
+Next I used convolution. Convolution is necessary becuase we need to accumulate the past values.
 
-$(f * g)(t)=\int^{\infty}_{-\infty} f(\tau)g(t - \tau)\$
+$(f * g)(t)=\int^{\infty}_{-\infty} f(t') g(t - t') dt'$
+
+$(I * G(r))(t) = \int^t_0 I(t')G(r, t-t')dt'$
+
+Here we could integrate from $-\infty$ to $\infty$, but we are only interested in the the area from $0$ to $t$.
+
+$\int^t_0 I(t')\frac{1}{(4 \pi D t)^{3/2}} \exp(-\frac{r^2}{4 D t})$
+
+Basically $I$ (current) describes the rate of substance being added, while Green's function is how the substance diffuses.
+
+Greens function describes how the system were modeling responds to an individual pulse. By  the principle of superposition we can sum up the individual responses using the integral.
+
+The current function act as like a weight for greens function, describing the intensity of the response of the system.
+
+Now each channel will diffuse calcium radially in all directions. This means that regardless of where the channel is a non zero amount of concentration will reach the vesicle from that channel. Thus again by the principle of superposition we can find the total amount of concentration at that vesicle by summing up the concentration from all of the channels.
+
+Now keep in mind my code takes a very long time to run. I estimate 10x as long. There are ways of shortening this such as reducing the area that the integral integrates which is what the code does. Ie: instead of integrating from $0$ to $t$ we integrate form $\max(0, t - N)$ to $t$ where $N$ is some predefined number based on the accepted error tolerance. Also I wrote the [integration code](https://github.com/evanwporter/ribbon-synapse/blob/main/CalcConc.c) in pure c to speed it up, but it still takes a while (though its still much faster) than the [matlab implementation](https://github.com/evanwporter/ribbon-synapse/blob/382b64705331de47d7463942b6f1a233470dae5d/%40PointSource/e_iterate.m#L8-L20).
 
 
-### Helpful Sources (in no particular order) (yes I know wikipedia is not the best source but it was still helpful so I included it)
-## Concentration Comparison Images
+## Comparison Graphs
 
 Generated using sinusoidal current.
+
+$\verb!Current! = 200 * 10^{-12} * |\sin(2  \pi t)|$
+
+$\verb!Diffusion Coefficient! = 5.2e-10$
+
+$r = [2.5*10^{-7}, 4*10^{-7}]$
 
 ![conc comp](https://github.com/evanwporter/ribbon-synapse/assets/115374841/e196df94-e784-4543-9c71-15a472e93b08)
 
@@ -85,7 +133,7 @@ Generated using sinusoidal current.
 ![conc comp](https://github.com/evanwporter/ribbon-synapse/assets/115374841/a05ba945-d650-488f-867b-e6a11e87fe78)
 
 
-## Sources I Found Helpful (in no particular order) (yes I know wikipedia is not the best source but it was still helpful so I included it)
+## Sources I Found Helpful (in no particular order)
 
 * https://www.physics.uci.edu/~silverma/bseqn/bs/node5.html
 
@@ -109,9 +157,8 @@ Generated using sinusoidal current.
 
 * https://www.damtp.cam.ac.uk/user/dbs26/1BMethods/GreensPDE.pdf
 
+* https://betterexplained.com/articles/intuitive-convolution/
 
-[^1]: https://betterexplained.com/articles/intuitive-convolution/
-
-[^2]: https://developer.nvidia.com/discover/convolution
+* https://developer.nvidia.com/discover/convolution
 
 

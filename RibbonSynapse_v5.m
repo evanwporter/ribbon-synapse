@@ -159,6 +159,7 @@ classdef RibbonSynapse_v5
             
             obj.xv = NaN(n, 2);
             
+            % Rectangular distribution
             for i = 1:n
                 obj.xv(i, 1) = floor((i-1)/2);
                 obj.xv(i, 2) = mod(i,2);
