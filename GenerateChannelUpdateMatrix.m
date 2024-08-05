@@ -4,35 +4,29 @@ arguments
     num_time_points = 10000;
     dt = 1e-4;
     Vt = -0.04;
-    to_csv = false;
+    to_csv = true;
 end
 
 % initial_channel_states = randi([0, 1], [1, 72]);
 initial_channel_states = zeros(1, 72);
 
 channel_state_matrix = zeros(num_time_points, 72);
-
-initial_channel_states = 0;
-channel_state_matrix = zeros(num_time_points, 1);
-
 channel_state_matrix(1, :) = initial_channel_states;
 
-V_half = -0.03;	
-k = 0.006;
-P_top = 0.35; 	
-P_bottom = 0;	
-
-
-boltzmann = @(Voltage) P_bottom + ((P_top - P_bottom) / (1+exp((V_half-Voltage)/k)));
+% V_half = -0.03;	
+% k = 0.006;
+% P_top = 0.35; 	
+% P_bottom = 0;	
+% boltzmann = @(Voltage) P_bottom + ((P_top - P_bottom) / (1+exp((V_half-Voltage)/k)));
 
 for t = 2:num_time_points
-    if rand(1) < boltzmann(Vt)
-        channel_state_matrix(t, :) = 1;
-    else
-        channel_state_matrix(t, :) = 0;
-    end
-    % prev_channel_states = channel_state_matrix(t-1, :);
-    % channel_state_matrix(t, :) = ChannelStateUpdate(opts, dt, prev_channel_states, Vt);
+    % if rand(1) < boltzmann(Vt)
+    %     channel_state_matrix(t, :) = 1;
+    % else
+    %     channel_state_matrix(t, :) = 0;
+    % end
+    prev_channel_states = channel_state_matrix(t-1, :);
+    channel_state_matrix(t, :) = ChannelStateUpdate(opts, dt, prev_channel_states, Vt);
 end
 
 % disp(channel_state_matrix);

@@ -1,5 +1,5 @@
 function channel_state = ChannelBlock(current_state, varargin)
-persistent q w c_proton;
+persistent q c w c_proton;
 persistent channels;
 
 transmitter_release_parameters = {500; 5; 1e-4};
@@ -12,10 +12,11 @@ nChannels = 72;
 if isempty(q)
     q = ones(nVesicles, 1);
     w = 0;
+    c = 0;
     c_proton = 0;
 
-    % These parameters are from SynapseOptions.channels
     channels = Channels(72, 5e-4, tau_blocked);
+
     channels.alpha = -133;
     channels.kp0 = 500000;
     channels.V0t = -0.0239;
@@ -38,6 +39,7 @@ NTManufacture = ~q & (rand(nVesicles,1) < opts.y.Hz*dt);
 q = q + NTManufacture;
 
 dc_proton = NTTransport * nVesicles / dt - 0.9 * l .* c_proton;
+
 c_proton = c_proton + dc_proton * dt;
 
 p_block = CaV13.CaProtonBlock(c_proton);
@@ -46,14 +48,14 @@ channel_state = 0;
 
 for ii = 1:nChannels
 
-    if channels.state(ii) == 'i' % inactivated
+    if channels(ii) == 'i' % inactivated
         continue
     end
 
     % Unblock channel
-    if channels.state(ii) == 'b' % blocked
-        if t >= channels.tblocked(ii)
-            channels.state(ii) = 'c';
+    if channels(ii) == 'b' % blocked
+        if t >= tblocked(ii)
+            channels(ii) = 'c';
         else
             continue
         end
@@ -72,8 +74,8 @@ for ii = 1:nChannels
         b = tau_blocked / a;
         tau = b * gammaincinv(rand(1,1), a); % gamma random number without toolbox
 
-        channels.state(ii) = 'b';
-        channels.tblocked(ii) = t + tau;
+        channels(ii) = 'b';
+        tblocked(ii) = t + tau;
     else
         channel_state = current_state;
     end
