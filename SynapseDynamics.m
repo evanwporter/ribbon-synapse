@@ -1,9 +1,9 @@
 function SynapseDynamics()
 
     % Voltage step to simulate
-    % Vt = -.0495; % Voltage in mV
+    Vt = -.01; % Voltage in mV
     voltage_steps = linspace(-.07, -.005, 20);
-    voltage_steps = voltage_steps(12);
+    voltage_steps = voltage_steps(10);
     
     opts = SynapseOptions();
 
@@ -19,12 +19,10 @@ function SynapseDynamics()
 
     % Initialize results
     release_rates = zeros(1, length(voltage_steps));
-    % results = zeros(1001, 34, length(voltage_steps));
 
     opts.initial_state = initialize_synapse_state(opts);
-    
 
-    % rs_s = ["r1"; "r2"; "i1"; "i2"; "i3"; "i4"; "i5"];
+    % rs_s = ["r1"; "i1"; "i2"; "i3"; "i4"; "i5"];
     % 
     % for rs = 1:length(rs_s)
     %     opts.rs = getSynapse(rs_s(rs));
@@ -41,12 +39,7 @@ function SynapseDynamics()
                                     opts, Vt, opts.dt);
         end
         
-        v_s = num2str(Vt);
-        v_s = v_s(4:end);
-        v_s(end+1:end+10) = "_mv_e_1e_3";
-
-        save(v_s, "y_out");
-        % results(:,:,v) = y_out;
+    
         release_rates(v) = calc_q_released(t_out, y_out, opts);
     end
     % 

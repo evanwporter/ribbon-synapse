@@ -123,7 +123,7 @@ classdef RibbonSynapse_v5
                 args.num_release_sites (1,1) double {mustBeInteger, mustBePositive} = 14
                 args.num_channels (1,1) double {mustBeInteger, mustBePositive} = 5
                 
-                args.distance_vesicle_membrane (1,1) double {mustBePositive} = 20 % nm
+                args.distance_vesicle_membrane (1,1) double {mustBePositive} = 5 % nm
                 args.intervesicle_distance (1,2) double {mustBePositive} = [55,55] % nm
 
                 args.channel_radius (1,1) double {mustBePositive} = 7.5 % nm
@@ -139,6 +139,7 @@ classdef RibbonSynapse_v5
                        
                 args.plotflag (1,1) logical = false
                 args.plot_histograms (1,1) logical = true
+
             end
             
             f = fieldnames(args);
@@ -159,7 +160,6 @@ classdef RibbonSynapse_v5
             
             obj.xv = NaN(n, 2);
             
-            % Rectangular distribution
             for i = 1:n
                 obj.xv(i, 1) = floor((i-1)/2);
                 obj.xv(i, 2) = mod(i,2);
@@ -483,7 +483,7 @@ classdef RibbonSynapse_v5
                             k = m*(i-1) + j;
                             
                             x = obj.xv(i,:);
-                            
+                             
                             while true
                                 dist = a + (b-a)*rand(1,1);
                                 angle = 2*pi*rand(1,1);
@@ -593,6 +593,37 @@ classdef RibbonSynapse_v5
                     xc = [X(:), Y(:)];
                     xc = o + xc(1:M,:);
 
+                case 'tightness'
+                    tightness = param.tightness;
+                    num_objects = 72;
+                    half_num_objects = num_objects / 4; % Number of objects per quadrant
+
+                    max_radius_x = param.x_rad;
+                    max_radius_y = param.y_rad;
+
+                    radius_x = max_radius_x * tightness;
+                    radius_y = max_radius_y * tightness;
+
+                    xc = zeros(num_objects, 2);
+                    for i = 1:half_num_objects
+                      while true
+                          x = rand * radius_x;
+                          y = rand * radius_y;
+
+                          % Check if the point is inside the oval
+                          if (x / radius_x)^2 + (y / radius_y)^2 <= 1
+                              xc(i, :) = [x, y];
+                              xc(half_num_objects + i, :) = [-x, y]; % Reflect across the y-axis
+                              xc(2 * half_num_objects + i, :) = [x, -y]; % Reflect across the x-axis
+                              xc(3 * half_num_objects + i, :) = [-x, -y]; % Reflect across both axes
+                              break;
+                          end
+                      end
+                    end
+                    % Adjust coordinates to fit with blue spheres
+                    xc(:, 1) = xc(:, 1) + 350; % Centering the distribution
+                    xc(:, 2) = xc(:, 2) + 50; % Centering the distribution
+                    
                 otherwise
                     error('Not set up')
             end
