@@ -19,6 +19,5 @@ function C = e_iterate(obj, it) % t, r, D, I, dt)
     %     end
     % end
 
-    % C = CalcConc(obj.r, obj.nr, obj.D, obj.dt, obj.current, it);
-    C = CalcG(it, obj.nr, obj.current, obj.dt, obj.G_array, obj.nt);
+    C = CalcConc(obj.r, obj.nr, obj.D, obj.dt, obj.current, it);
 end
