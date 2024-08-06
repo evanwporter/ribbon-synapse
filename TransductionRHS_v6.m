@@ -119,7 +119,7 @@ for ii = 1:channels.num
     end
 
     % Block channel
-    % Check if channel becomes blocked
+    % Check if channel becomes unblocked
     if rand(1) < p_block * dt_ / channels.tau_blocked
 
         % generate random close time from a gamma distribution
@@ -159,10 +159,6 @@ end
 
 m = sum(channels.state == 'o') / num_CaV13;
 Ca_blocked = sum(channels.state == 'b') / num_CaV13;
-
-if any(Ca_blocked)
-    disp(sum(channels.state == 'b'))
-end
 
 
 %% Calculate concentration
@@ -403,7 +399,6 @@ function [C_vesicle, C] = calcium_concentration(vesicles, ps, it, all_channel_sw
     %   C(:, i) -> Particular channel i (column)
     %   C(1:num_channels, :) -> Channel i to all other Channels concentration
     %   C(num_channels:end, :) -> Channel i to all other Vesiclse concentration
-    %   (num_vesicles + num_channels) x num_channels array
     C = zeros(ps{1}.nr, num_channels);   % Initialize concentration matrix
     
     % Calculate concentration from each channel
@@ -411,7 +406,11 @@ function [C_vesicle, C] = calcium_concentration(vesicles, ps, it, all_channel_sw
         if opts.ode15s_
             C(:, i) = ps{i}.dt_iterate(opts.tspan_array) / 1e3;
         else
-            C(:,i) = ps{i}.iterate(it) / 1e3; % (num_vesicles + num_channels) x 1 array
+            if opts.e_iter
+                C(:,i) = ps{i}.e_iterate(it) / 1e3;
+            else
+                C(:,i) = ps{i}.iterate(it) / 1e3; % (num_vesicles + num_channels) x 1 array
+            end
         end
     end
     

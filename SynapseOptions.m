@@ -49,8 +49,8 @@ classdef SynapseOptions < handle % handles allows updating properties by referen
 
         C_Ca_background (1,1) double;
 
-        % Position property, must be between 0 and 1 (I think)
-        x_pos (1,1) double {mustBeGreaterThanOrEqual(x_pos, 0), mustBeLessThanOrEqual(x_pos, 1)} = 0.5;
+        % Position property, must be between 0 and 1
+        x_pos (1,1) double {mustBeGreaterThanOrEqual(x_pos, 0), mustBeLessThanOrEqual(x_pos, 1)} = 0.8;
 
         size_info struct;
 
@@ -85,6 +85,8 @@ classdef SynapseOptions < handle % handles allows updating properties by referen
         tspan_array (1, :) double;
 
         initial_state
+
+        e_iter (1, 1) bool = false;
     end
     
     methods
@@ -117,7 +119,7 @@ classdef SynapseOptions < handle % handles allows updating properties by referen
             % https://github.com/evanwporter/cochlea-nerve/blob/cc845a8870e4825796b05a13568a15e4361ce6cf/IHC/Transduction_v4.m#L147-L148
             obj.channels = Channels(obj.num_CaV13, obj.tau_CaV13.s, obj.tau_CaV13_blocked.s);
 
-            obj.x_pos = .5;
+            % obj.x_pos = .5;
 
             obj.transmitter_release_parameters = uconv(obj.generate_transmitter_release_parameters(obj.x_pos));
             
@@ -141,7 +143,7 @@ classdef SynapseOptions < handle % handles allows updating properties by referen
                 obj.vesicles.close_channels{i} = 1:obj.num_CaV13;
             end
 
-            %% https://github.com/evanwporter/cochlea-nerve/blob/4e8b4f18f20782bfc39d88589db9f4e04dbcf507/Wrapper/Options/transductionOpt_v4_1.m#L38-L50
+            % https://github.com/evanwporter/cochlea-nerve/blob/4e8b4f18f20782bfc39d88589db9f4e04dbcf507/Wrapper/Options/transductionOpt_v4_1.m#L38-L50
             obj.y = Frequency(10, 'Hz'); % Sumner 2002
             obj.l = Frequency(1290, 'Hz'); % to roughly match the time-constant of H&H
             obj.x = Frequency(66.3, 'Hz'); % Sumner 2002
@@ -155,8 +157,8 @@ classdef SynapseOptions < handle % handles allows updating properties by referen
             % );
 
             obj.rs = RibbonSynapse_v5( ...
-                'plotflag', true, ...
-                'plot_histograms', false, ...
+                'plotflag', false, ...
+                'plot_histograms', false, ...Ft
                 'channel_distribution_method', 'regular_band_n', ...
                 'channel_distribution_parameters', struct(...
                     'length', 24*20, ...
@@ -164,7 +166,7 @@ classdef SynapseOptions < handle % handles allows updating properties by referen
                 ), ...
                 'num_channels', obj.num_CaV13, ...
                 'num_release_sites', obj.num_release_sites, ...
-                'vesicle_radius', 40, ...
+                'vesicle_radius', 20, ...
                 'intervesicle_distance', 100 ...
             );
 
@@ -198,7 +200,7 @@ classdef SynapseOptions < handle % handles allows updating properties by referen
                 if obj.ode15s_
                     obj.ps{i} = PointSource(d, obj.Ca_diffusion_coefficient, r, 'method', 'evan');
                 else
-                    obj.ps{i} = Diffusion.PointSource(d, obj.Ca_diffusion_coefficient, r, obj.dt, 0:numSamples, 'rel_tol', obj.Ca_conc_rel_tol);
+                    obj.ps{i} = PointSource(d, obj.Ca_diffusion_coefficient, r, obj.dt, 0:numSamples, 'rel_tol', obj.Ca_conc_rel_tol);
                 end
             end
 

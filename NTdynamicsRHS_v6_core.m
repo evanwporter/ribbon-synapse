@@ -21,7 +21,7 @@ M = vesicles.num;
 
 %% Transmitter Release and Recycling
 
-% kmax = opts.transmitter_release_parameters{1};
+kmax = opts.transmitter_release_parameters{1};
 % n_Hill = transmitter_release_parameters{2};
 % KA_Hill = transmitter_release_parameters{3};
 
@@ -63,7 +63,7 @@ dq = (q - q_old) / dt;
 dc = sum(Nqk) / dt - opts.l.Hz .* c - opts.r.Hz .* c;
 dw = opts.r.Hz .* c - sum(Nwx) / dt;
 
-dc_proton = sum(Nqk)/dt - 0.9 * opts.l.Hz .*c_proton;
+dc_proton = sum(Nqk)/dt - 0.9 * opts.l.Hz .* c_proton;
 
 for i = 1:sum(Nqk)
     vesicles.logReleaseEvent(t);
@@ -108,7 +108,6 @@ function N = NTManufacture(q, rho, n)
         N = zeros(size(q));
     end
 end
-
 function N = NTTransport(q, rho, n)
     n_occupied = sum(q); % number occupied
     % disp("n_occupied"); disp(n_occupied)

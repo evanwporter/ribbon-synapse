@@ -1,30 +1,4 @@
-# Program Overview
-
-## What It Does
-
-### Calculates Neurotransmitter release given a voltage
-
-![rrate](https://github.com/evanwporter/ribbon-synapse/assets/115374841/e05fda34-cb92-4942-9b8b-3fcf107b55a8)
-
-### Models Ribbon Synapse
-
-![image](https://github.com/evanwporter/ribbon-synapse/assets/115374841/2b8a071d-d19e-449d-a228-a7f7d00c1db4)
-
-## What It Can do
-
-* Calculate Neurotransmitter contents in the vesicle
-* Calculate RoC of Neurotransmitter concentration in the synaptic cleft
-* Calculate Neurotransmitter Reprocessing rate
-* Calculate RoC of proton concentration in the synaptic cleft
-* Model
-  * RoC of fraction of open channels
-  * RoC of fraction of blocked channels
-* RoC of calcium current
-* RoC of calcium concentration at the vesicles
-
-Since we give the initial condition we can calculate the actual value of any of the above points at any point in time.
-
-## Concentration Equation (Diffusion)
+# Concentration Equation (Diffusion)
 
 For each Channel, concentration is calculated at two points of interest:
 
@@ -78,7 +52,7 @@ When N = 1 this is equivalent to
 
 $2 * \frac{J_i}{4 \pi D r} \exp(\frac{r}{\sqrt{4 D t}})$
 
-## Evan's Method
+# Evan's Method
 Because of these issues I came up with my own method.
 
 $C(t, r) = \int_0^t \frac{I(t')}{(4\pi D (t - t'))^{3/2}} \exp(-\frac{|r|^2}{4D (t - t')}) \, dt'$
@@ -112,7 +86,7 @@ Now each channel will diffuse calcium radially in all directions. This means tha
 Now keep in mind my code takes a very long time to run. I estimate 10x as long. There are ways of shortening this such as reducing the area that the integral integrates which is what the code does. Ie: instead of integrating from $0$ to $t$ we integrate form $\max(0, t - N)$ to $t$ where $N$ is some predefined number based on the accepted error tolerance. Also I wrote the [integration code](https://github.com/evanwporter/ribbon-synapse/blob/main/CalcConc.c) in pure c to speed it up, but it still takes a while (though its still much faster) than the [matlab implementation](https://github.com/evanwporter/ribbon-synapse/blob/382b64705331de47d7463942b6f1a233470dae5d/%40PointSource/e_iterate.m#L8-L20).
 
 
-## Comparison Graphs
+# Comparison Graphs
 
 Generated using sinusoidal current.
 
@@ -133,7 +107,7 @@ $r = [2.5*10^{-7}, 4*10^{-7}]$
 ![conc comp](https://github.com/evanwporter/ribbon-synapse/assets/115374841/a05ba945-d650-488f-867b-e6a11e87fe78)
 
 
-## Sources I Found Helpful (in no particular order)
+# Sources I Found Helpful (in no particular order)
 
 * https://www.physics.uci.edu/~silverma/bseqn/bs/node5.html
 
