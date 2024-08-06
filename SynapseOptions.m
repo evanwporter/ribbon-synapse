@@ -141,7 +141,7 @@ classdef SynapseOptions < handle % handles allows updating properties by referen
                 obj.vesicles.close_channels{i} = 1:obj.num_CaV13;
             end
 
-            %% https://github.com/evanwporter/cochlea-nerve/blob/4e8b4f18f20782bfc39d88589db9f4e04dbcf507/Wrapper/Options/transductionOpt_v4_1.m#L38-L50
+            % https://github.com/evanwporter/cochlea-nerve/blob/4e8b4f18f20782bfc39d88589db9f4e04dbcf507/Wrapper/Options/transductionOpt_v4_1.m#L38-L50
             obj.y = Frequency(10, 'Hz'); % Sumner 2002
             obj.l = Frequency(1290, 'Hz'); % to roughly match the time-constant of H&H
             obj.x = Frequency(66.3, 'Hz'); % Sumner 2002

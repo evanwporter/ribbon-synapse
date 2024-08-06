@@ -68,6 +68,8 @@ for j = 1:length(labels)
         model.param("par9").set("Vm", sprintf("%d [V]", Vt));
 
         channel_state_matrix = GenerateChannelUpdateMatrix(opts, 1e4, 1e-4, Vt);
+        time_vector = 0:1e-4:1;
+        create_interpolations(interpolation_unit, model, rs, time_vector, channel_state_matrix)
         create_flux("block", component_name, rs, model, channel_state_matrix)
 
         try
@@ -259,7 +261,7 @@ if setting == "complex" | setting == "block"
         if setting == "complex"
             flux.set('J0', sprintf("-channel_state_%i(t) * P * charge^2 * U * ( (c - (C_extracellular * emU)) / (1 - emU) )", i));
         elseif setting == "block"
-            flux.set('J0', sprintf("-ChannelBlock(C_Avg, channel_state_%i(t)) * P * charge^2 * U * ( (c - (C_extracellular * emU)) / (1 - emU) )", i));
+            flux.set('J0', sprintf("-ChannelBlock(channel_state_%i(t), %i, t, C_Avg_1, C_Avg_2, C_Avg_3, C_Avg_4, C_Avg_5, C_Avg_6, C_Avg_7, C_Avg_8, C_Avg_9, C_Avg_10, C_Avg_11, C_Avg_12, C_Avg_13, C_Avg_14, C_Avg_15, C_Avg_16) * P * charge^2 * U * ( (c - (C_extracellular * emU)) / (1 - emU) )", i));
         end
     end
 end
@@ -325,8 +327,29 @@ end
 
 end
 
+function create_interpolations(interpolation_unit, model, rs, time_vector, channel_state_matrix)
+    for i = 1:size(rs.xc, 1)
+        func_name = ['channel_state_' num2str(i)];
+        try
+            model.func.create(func_name, 'Interpolation');
+        catch
+        end
 
-%% Physics
+        model.func(func_name).set('interp', 'neighbor');
+
+        model.func(func_name).set('source', 'table');
+
+        table_data = cell(length(time_vector), 2);
+        for j = 1:length(time_vector)
+            table_data{j, 1} = num2str(time_vector(j));
+            table_data{j, 2} = num2str(channel_state_matrix(j,i)); 
+        end
+
+        model.func(func_name).set('table', table_data);
+
+        model.func(func_name).set('argunit', interpolation_unit);
+    end
+end
 
 % channel_open_prob = sum(channel_state_matrix) / length(channel_state_matrix);
 
@@ -400,29 +423,7 @@ end
 % 
 % 
 % 
-% if update_interpolation
-%     for i = 1:size(rs.xc, 1)
-%         func_name = ['channel_state_' num2str(i)];
-%         try
-%             model.func.create(func_name, 'Interpolation');
-%         catch
-%         end
-% 
-%         model.func(func_name).set('interp', 'neighbor');
-% 
-%         model.func(func_name).set('source', 'table');
-% 
-%         table_data = cell(length(time_vector), 2);
-%         for j = 1:length(time_vector)
-%             table_data{j, 1} = num2str(time_vector(j)); % TODO: Move this out of the loop
-%             table_data{j, 2} = num2str(channel_state_matrix(j,i)); 
-%         end
-% 
-%         model.func(func_name).set('table', table_data);
-% 
-%         model.func(func_name).set('argunit', interpolation_unit);
-%     end
-% end
+%
 % 
 % 
 % % Save the modified model

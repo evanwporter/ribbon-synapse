@@ -7,7 +7,7 @@ cmap = jet(7);
 times = 0:1e-4:1;
 
 for i = 1:length(labels)
-    plot(data{i}(1,:) * 1000, data{i}(2, :), "Color", cmap(i,:))
+    plot(total_release{i}(1,:) * 1000, total_release{i}(2, :), "Color", cmap(i,:))
     hold on
 end
 
